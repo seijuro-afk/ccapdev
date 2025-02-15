@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You Page</title>
+    <link rel="stylesheet" href="/css/fyp_style.css"> <!-- Link to your CSS -->
+
+
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- For You Page Section -->
+    <div class="container">
+        <h2 class="page-title">For You</h2>
+        <div class="header">
+            <p class="subheading">Trending & Personalized Posts</p>
+            <button class="manage-btn" id="manageTopicsBtn">Manage Topics</button>
+        </div>
+
+        <!-- Topics Section -->
+        <div class="topics-section">
+            <h3 class="section-title">Your Topics</h3>
+            <div class="topics-grid" id="followedTopics">
+                <!-- Followed topics will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Recommended Topics -->
+        <div class="recommended-topics">
+            <h3 class="section-title">Recommended Topics</h3>
+            <div class="topics-grid" id="recommendedTopics">
+                <div class="topic-item">
+                    <span class="topic-name">Campus Life</span>
+                    <button class="follow-btn" data-topic="campus-life">Follow</button>
+                </div>
+                <div class="topic-item">
+                    <span class="topic-name">Food & Dining</span>
+                    <button class="follow-btn" data-topic="food-dining">Follow</button>
+                </div>
+                <div class="topic-item">
+                    <span class="topic-name">Academics</span>
+                    <button class="follow-btn" data-topic="academics">Follow</button>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Personalized Feed -->
+        <div class="feed" id="personalizedFeed">
+
+            <div class="feed-item">
+                <h3 class="feed-title">"Best food stalls near Henry Sy?"</h3>
+                <p class="feed-details">By @foodieDLSU | 25 upvotes</p>
+            </div>
+            <div class="feed-item">
+                <h3 class="feed-title">"Is the Andrew Hall study lounge open 24/7?"</h3>
+                <p class="feed-details">By @studentlife | 18 upvotes</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/fyp_script.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add error handling for resource loading
+        window.addEventListener('error', function(e) {
+            console.error('Error loading resource:', e.message);
+        });
+    </script>
+
+</body>
+
+</html>

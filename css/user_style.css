@@ -1,0 +1,111 @@
+/* Icon Styles */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    stroke-width: 0;
+    stroke: currentColor;
+    fill: currentColor;
+}
+
+.icon-heart::before {
+    content: "♥";
+}
+
+.icon-comment::before {
+    content: "💬";
+}
+
+.icon-search::before {
+    content: "🔍";
+}
+
+/* For You Page Styles */
+
+#topicsSection {
+    margin-bottom: 2rem;
+}
+
+#followedTopics, #recommendedTopics {
+    margin-top: 1rem;
+}
+
+.follow-btn, .unfollow-btn {
+    transition: background-color 0.3s ease;
+}
+
+.follow-btn:hover {
+    background-color: #00592D !important;
+}
+
+.btn-success .icon {
+    margin-right: 0.5em;
+}
+
+
+.unfollow-btn:hover {
+    background-color: #D9B8B9 !important;
+}
+
+#personalizedFeed {
+    margin-top: 2rem;
+}
+
+/* Topic Cards */
+[class*="bg-[#F2DFE0]"] {
+    transition: transform 0.2s ease;
+}
+
+[class*="bg-[#F2DFE0]"]:hover {
+    transform: translateY(-2px);
+}
+
+/* Manage Topics Button */
+#manageTopicsBtn {
+    transition: all 0.3s ease;
+}
+
+#manageTopicsBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Navigation Styles */
+.tab-btn {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tab-btn:hover {
+    color: #00592D;
+}
+
+.tab-btn.active {
+    border-color: #00703C;
+    color: #00703C;
+    font-weight: 600;
+}
+
+.tab-content {
+    transition: opacity 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    #followedTopics, #recommendedTopics {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-btn {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+}
