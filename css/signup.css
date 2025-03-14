@@ -1,19 +1,20 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
+    background: linear-gradient(135deg, rgba(242, 223, 224, 0.9), rgba(220, 200, 201, 0.9));
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: auto;
     margin: 0;
 }
 
 .signup-container {
+    margin-top: 10vh;
     background-color: #fff;
     padding: 50px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 100vh;
 }
 
 .signup-container h2 {
@@ -70,3 +71,83 @@ body {
     font-size: 14px;
     margin-top: 10px;
 }
+
+.info-container {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+.id-container, .college-container {
+    margin-right: 1rem;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.id-container label, .college-container label {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    margin-left: 0.2rem;
+    margin-right: 1rem;
+}
+
+.id-container select, .college-container select {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 20%;
+    box-sizing: border-box;
+}
+
+.username-holder{
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.username-holder label{
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    margin-left: 0.2rem;
+    margin-right: 1rem;
+}
+
+.username-holder input[type="text"]{
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.bio-container{
+    justify-content: left;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.bio-container label{
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin-left: 0.2rem;
+    margin-right: 1rem;
+    color: grey;
+}
+
+.bio-container textarea {
+    width: 100%;
+    min-height: 15vh;
+    padding: 10px;
+    margin: 10px 0;
+    margin-top: 0;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    vertical-align: top; /* Ensures text starts at the top */
+    resize: vertical; /* Allows vertical resizing */
+    line-height: 1.2; /* Ensures proper text spacing */
+}
+
+
