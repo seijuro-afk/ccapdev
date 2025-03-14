@@ -3,8 +3,8 @@
 A requirement for CCAPDEV
 
 ## Project Phases
-- [x] Phase 1
-- [ ] Phase 2
+- [x] Phase 1 (For more reformatting)
+- [ ] Phase 2 (WIP)
 - [ ] Phase 3
 
 ## Running the Program Locally
