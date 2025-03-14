@@ -32,7 +32,7 @@ Ensure you have the following installed on your local machine:
 5. **Setup the database** in MongoDB.
 6. Start the Node.js server:
    ```sh
-   npm start
+   node server.js
    ```
 7. Open the application in your browser:
    ```
