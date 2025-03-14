@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AnimoBuzz - Home</title>
+    <link rel="stylesheet" href="/css/home_styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">AnimoBuzz</a>
+        <button onclick="window.location.href='/login'">Login</button>
+    </nav>
+
+    <div class="container">
+        <h2>Recent Posts</h2>
+        <% posts.forEach(post => { %>
+            <div class="post">
+                <h4><%= post.author %></h4>
+                <p><%= post.content %></p>
+            </div>
+        <% }) %>
+    </div>
+
+    <script src="/js/home_script.js"></script>
+</body>
+</html>
