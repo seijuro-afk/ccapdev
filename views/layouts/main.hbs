@@ -10,8 +10,9 @@
 </head>
 <body>
     <!-- Include the navbar partial -->
-    {{> navbar}}
-
+    {{#if showNavbar}}
+        {{> navbar}}
+    {{/if}}
     <!-- Content Block -->
     {{{body}}}
 

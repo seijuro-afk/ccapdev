@@ -40,6 +40,7 @@ app.use(session({
 
 // Middleware to make user session available to all views
 app.use((req, res, next) => {
+    res.locals.showNavbar = true; // Show the navbar by default
     res.locals.user = req.session.user;
     next();
 });
@@ -261,6 +262,16 @@ app.get("/user-profile", (req, res) => {
         }
     });
 });
+
+
+app.get("/signup", (req, res) => {
+    res.locals.showNavbar = false;
+    res.render("signup", {
+        title: "Sign Up",
+        brandName: "AnimoBuzz"
+    });
+});
+
 
 // Session setup
 app.use(session({
