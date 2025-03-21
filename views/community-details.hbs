@@ -1,0 +1,46 @@
+        <header class="banner">
+            <h1>{{name}}</h1>
+            <p>{{description}}</p>
+            <button id="join-leave-btn">{{joinButtonText}}</button>
+        </header>
+        
+        <nav class="tabs">
+            {{#each tabs}}
+                <button class="tab" data-tab="{{this.id}}">{{this.label}}</button>
+            {{/each}}
+        </nav>
+        
+        <section id="content">
+            <div id="discussions" class="tab-content {{#if activeTab.discussions}}active{{/if}}">
+                <h2>Active Discussions</h2>
+                <ul id="discussion-list">
+                    {{#each discussions}}
+                        <li><a href="{{this.link}}">{{this.title}}</a></li>
+                    {{/each}}
+                </ul>
+            </div>
+            <div id="events" class="tab-content {{#if activeTab.events}}active{{/if}}">
+                <h2>Upcoming Events</h2>
+                {{#if events}}
+                    <ul>
+                        {{#each events}}
+                            <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                {{else}}
+                    <p>No upcoming events.</p>
+                {{/if}}
+            </div>
+            <div id="members" class="tab-content {{#if activeTab.members}}active{{/if}}">
+                <h2>Community Members</h2>
+                {{#if members}}
+                    <ul>
+                        {{#each members}}
+                            <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                {{else}}
+                    <p>No members to display.</p>
+                {{/if}}
+            </div>
+        </section>

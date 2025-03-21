@@ -1,0 +1,68 @@
+        <div class="container">
+            <h2 class="page-title">For You</h2>
+            <div class="header">
+                <p class="subheading">Trending & Personalized Posts</p>
+                <button class="manage-btn" id="manageTopicsBtn">Manage Topics</button>
+            </div>
+
+            <!-- Topics Section -->
+            <div class="topics-section">
+                <h3 class="section-title">Your Topics</h3>
+                <div class="topics-grid" id="followedTopics">
+                    {{#if followedTopics}}
+                        {{#each followedTopics}}
+                            <div class="topic-item">
+                                <span class="topic-name">{{this.name}}</span>
+                                <button class="follow-btn" data-topic="{{this.id}}">Follow</button>
+                            </div>
+                        {{/each}}
+                    {{else}}
+                        <p>No topics followed yet.</p>
+                    {{/if}}
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Recommended Topics -->
+            <div class="recommended-topics">
+                <h3 class="section-title">Recommended Topics</h3>
+                <div class="topics-grid" id="recommendedTopics">
+                    {{#if recommendedTopics}}
+                        {{#each recommendedTopics}}
+                            <div class="topic-item">
+                                <span class="topic-name">{{this.name}}</span>
+                                <button class="follow-btn" data-topic="{{this.id}}">Follow</button>
+                            </div>
+                        {{/each}}
+                    {{else}}
+                        <p>No recommended topics.</p>
+                    {{/if}}
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Personalized Feed -->
+            <div class="feed" id="personalizedFeed">
+                {{#if feedItems}}
+                    {{#each feedItems}}
+                        <div class="feed-item">
+                            <h3 class="feed-title">{{this.title}}</h3>
+                            <p class="feed-details">By {{this.author}} | {{this.upvotes}} upvotes</p>
+                        </div>
+                    {{/each}}
+                {{else}}
+                    <p>No feed items to display.</p>
+                {{/if}}
+            </div>
+        </div>
+
+        <script src="/js/fyp_script.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Add error handling for resource loading
+            window.addEventListener('error', function(e) {
+                console.error('Error loading resource:', e.message);
+            });
+        </script>

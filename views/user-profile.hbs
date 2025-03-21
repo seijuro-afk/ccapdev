@@ -1,0 +1,106 @@
+        <div class="container-fluid mt-3">
+            <div class="row">
+                <!-- Left Sidebar -->
+                <div class="col-md-3 d-none d-md-block">
+                    <div class="list-group">
+                        {{#each sidebarLinks}}
+                            <a href="{{this.url}}" class="list-group-item list-group-item-action {{#if this.active}}active{{/if}}">{{this.label}}</a>
+                        {{/each}}
+                    </div>                
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="{{user.avatar}}" alt="Profile" class="rounded-circle me-3" style="width: 100px; height: 100px;">
+                                <div>
+                                    <h2 class="h4 mb-1">{{user.name}}</h2>
+                                    <p class="text-muted mb-1">@{{user.username}} | ID: {{user.id}}</p>
+                                    <p class="text-muted small">{{user.college}} - {{user.program}}</p>
+                                    <p class="text-muted">{{user.bio}}</p>
+                                    <button class="btn btn-success">Edit Profile</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Nav -->
+                    <ul class="nav nav-tabs mb-3">
+                        {{#each tabs}}
+                            <li class="nav-item">
+                                <button class="nav-link {{#if this.active}}active{{/if}}" data-tab="{{this.id}}">{{this.label}}</button>
+                            </li>
+                        {{/each}}
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div id="posts-tab" class="tab-content {{#if activeTab.posts}}active{{/if}}">
+                        {{#if posts}}
+                            {{#each posts}}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <p class="card-text">{{this.content}}</p>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="text-muted">No posts to display yet.</p>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+
+                    <div id="events-tab" class="tab-content {{#if activeTab.events}}active{{/if}}">
+                        {{#if events}}
+                            {{#each events}}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <p class="card-text">{{this}}</p>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="text-muted">No events to display yet.</p>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+
+                    <div id="discussions-tab" class="tab-content {{#if activeTab.discussions}}active{{/if}}">
+                        {{#if discussions}}
+                            {{#each discussions}}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <p class="card-text">{{this}}</p>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        {{else}}
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="text-muted">No discussions to display yet.</p>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <!-- Right Sidebar -->
+                <div class="col-md-3 d-none d-md-block">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">Quick Links</div>
+                        <ul class="list-group list-group-flush">
+                            {{#each quickLinks}}
+                                <li class="list-group-item">{{this}}</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
