@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{brandName}}</title>
+    <link rel="stylesheet" href="/css/signup.css">
+</head>
+<body>
+    {{> navbar}} <!-- Include the navbar partial -->
+
+    <div class="signup-container">
+        <h2>{{title}}</h2>
+        <form action="/users/register" method="post"> 
+            <input type="text" name="username" placeholder="Username" required> 
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+
+            <div class="info-container">
+                <div class="id-container">
+                    <label for="id_number">ID:</label>
+                    <select id="id_number" name="id_number" required>
+                        <option value="124">124</option>
+                        <option value="123">123</option>
+                        <option value="122">122</option>
+                        <option value="121">121</option>
+                        <option value="120">120</option>
+                    </select>
+                </div>
+                <div class="college-container">
+                    <label for="college">Role:</label>
+                    <select id="college" name="college" required>
+                        <option value="CCS">CCS</option>
+                        <option value="CLA">CLA</option>
+                        <option value="GCOE">GCOE</option>
+                        <option value="RVCOB">RVCOB</option>
+                        <option value="COS">COS</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bio-container">
+                <label for="bio">Give a little introduction to our community:</label>
+                <textarea name="bio" id="bio" placeholder="Write your bio here..."></textarea>
+            </div>            
+            <button type="submit">Sign Up</button>
+        </form>
+    </div>
+    <script src="/js/signup.js"></script>
+</body>
+</html>
