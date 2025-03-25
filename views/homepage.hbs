@@ -35,9 +35,13 @@
                             <h6 class="card-title mb-1">{{this.author}}</h6>
                             <p class="card-text">{{this.content}}</p>
                             <div class="d-flex">
-                                <button class="btn btn-sm btn-outline-success me-2">
-                                    <i class="fa fa-heart"></i> Like
+                                <button class="btn btn-sm btn-outline-success upvote-btn me-2" data-post-id="{{this._id}}">
+                                    <i class="fa fa-arrow-up"></i> <span class="upvote-count">{{this.upvotes}}</span>
                                 </button>
+                                <button class="btn btn-sm btn-outline-danger downvote-btn" data-post-id="{{this._id}}">
+                                    <i class="fa fa-arrow-down"></i> <span class="downvote-count">{{this.downvotes}}</span>
+                                </button>
+
                                 <button class="btn btn-sm btn-outline-primary">
                                     <i class="fa fa-comment"></i> Comment
                                 </button>
