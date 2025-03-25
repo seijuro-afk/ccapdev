@@ -6,18 +6,19 @@ exports.createPost = async (req, res) => {
     try {
         const { content } = req.body;
         const newPost = new Post({
-            author: "Anonymous", 
+            author: "Anonymous",
             content: content,
-            avatar: "/images/default-avatar.jpg"
+            avatar: "/images/default-avatar.jpg",
+            upvotes: 0,
+            downvotes: 0
         });
         await newPost.save();
-        res.redirect("/"); 
+        res.redirect("/");
     } catch (error) {
         console.error("Error creating post:", error);
         res.status(500).send("Internal Server Error");
     }
 };
-
 
 exports.getAllPosts = async (req, res) => {
     try {
@@ -38,4 +39,22 @@ exports.getAllPosts = async (req, res) => {
     }
 };
 
+// Upvote & Downvote Controller
+exports.votePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type } = req.body; // "upvote" or "downvote"
 
+        const post = await Post.findById(id);
+        if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+
+        if (type === "upvote") post.upvotes += 1;
+        if (type === "downvote") post.downvotes += 1;
+
+        await post.save();
+        res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
+    } catch (error) {
+        console.error("Error voting on post:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
