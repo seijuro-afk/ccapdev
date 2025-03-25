@@ -52,3 +52,23 @@ body {
 .back-button:hover {
     background-color: #5a6268; 
 }
+
+.upvote-btn, .downvote-btn {
+    font-size: 1.2rem; /* Increase button size */
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.upvote-btn i, .downvote-btn i {
+    font-size: 1.5rem; /* Make icons larger */
+}
+
+.upvote-btn:hover i {
+    color: green;
+}
+
+.downvote-btn:hover i {
+    color: red;
+}
+
