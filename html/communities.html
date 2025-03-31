@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Page</title>
+    <link rel="stylesheet" href="../css/style1.css">
+</head>
+<body>
+    <header class="banner">
+        <h1>Community Name</h1>
+        <p>Community description goes here.</p>
+        <button id="join-leave-btn">Join</button>
+    </header>
+    
+    <nav class="tabs">
+        <button class="tab" data-tab="discussions">Discussions</button>
+        <button class="tab" data-tab="events">Events</button>
+        <button class="tab" data-tab="members">Members</button>
+    </nav>
+    
+    <section id="content">
+        <div id="discussions" class="tab-content active">
+            <h2>Active Discussions</h2>
+            <ul id="discussion-list">
+                <li><a href="discussionthread.html">Discussion 1</a></li>
+                <li><a href="discussionthread.html">Discussion 2</a></li>
+            </ul>
+        </div>
+        <div id="events" class="tab-content">
+            <h2>Upcoming Events</h2>
+        </div>
+        <div id="members" class="tab-content">
+            <h2>Community Members</h2>
+        </div>
+    </section>
+    
+    <script src="../js/communities_script.js"></script>
+</body>
+</html>
+
