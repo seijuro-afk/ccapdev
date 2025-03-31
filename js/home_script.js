@@ -1,49 +1,32 @@
 document.addEventListener("DOMContentLoaded", function () {
     const posts = [
-        {
-            author: "Spongebob Squarepants",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-01")
-        },
-        {
-            author: "Patrick Star",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-02")
-        },
-        {
-            author: "Squidward",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-03")
-        },
-        {
-            author: "Mr. Krabs",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-04")
-        },
-        {
-            author: "Plankton",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-05")
-        },
-        {
-            author: "Anonymous",
-            content: "This is a sample beep! #BeeLine",
-            timestamp: new Date("2023-10-06")
-        }
+        { author: "Spongebob Squarepants", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-01") },
+        { author: "Patrick Star", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-02") },
+        { author: "Squidward", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-03") },
+        { author: "Mr. Krabs", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-04") },
+        { author: "Plankton", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-05") },
+        { author: "Anonymous", content: "This is a sample beep! #BeeLine", timestamp: new Date("2023-10-06") }
     ];
 
-    // Function to sort posts from oldest to latest
-    function sortPosts() {
-        return posts.sort((a, b) => a.timestamp - b.timestamp);
+    const postContainer = document.getElementById("postList");
+    const sortDropdown = document.getElementById("sortDropdown");
+
+    let isLoggedIn = false; // Change this based on actual authentication status
+
+    // Function to sort posts
+    function sortPosts(order) {
+        return posts.sort((a, b) => {
+            return order === "latest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp;
+        });
     }
 
     // Function to render posts
-    function renderPosts() {
-        const sortedPosts = sortPosts();
-        const postContainer = document.querySelector(".col-md-6");
-        postContainer.innerHTML = ""; // Clear existing posts
+    function renderPosts(order = "oldest") {
+        postContainer.innerHTML = ""; // Clear posts
+        const sortedPosts = sortPosts(order);
+        const maxPosts = isLoggedIn ? sortedPosts.length : 5;
 
-        sortedPosts.forEach(post => {
+        sortedPosts.slice(0, maxPosts).forEach(post => {
             const postElement = `
                 <div class="post card mb-3">
                     <div class="card-body d-flex">
@@ -52,10 +35,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             <h6 class="card-title mb-1">${post.author}</h6>
                             <p class="card-text">${post.content}</p>
                             <div class="d-flex">
-                                <button class="btn btn-sm btn-outline-success me-2">
+                                <button class="btn btn-sm btn-outline-success me-2 like-btn">
                                     <i class="fa fa-heart"></i> Like
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary">
+                                <button class="btn btn-sm btn-outline-primary comment-btn">
                                     <i class="fa fa-comment"></i> Comment
                                 </button>
                             </div>
@@ -65,38 +48,35 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             postContainer.innerHTML += postElement;
         });
+
+        // Disable Like & Comment buttons if not logged in
+        if (!isLoggedIn) {
+            document.querySelectorAll(".like-btn, .comment-btn").forEach(btn => {
+                btn.setAttribute("disabled", "true");
+                btn.classList.add("disabled");
+            });
+        }
     }
 
-    renderPosts(); // Initial render of posts
+    // Initial Render (Default: Oldest to Latest)
+    renderPosts();
 
-    const isLoggedIn = false; // Change to true if the user is logged in
+    // Sorting Event Listener
+    sortDropdown.addEventListener("change", function () {
+        renderPosts(sortDropdown.value);
+    });
+
+    // Authentication Handling
     const authButtonContainer = document.getElementById("authButtonContainer");
-    
+
     if (!isLoggedIn) {
-        // Show login button
         authButtonContainer.innerHTML = `<button class="btn btn-outline-light" id="loginButton">Login</button>`;
         document.getElementById("loginButton").addEventListener("click", function () {
             window.location.href = "login.html";
         });
 
-        // Disable post creation
         document.getElementById("postCreation").innerHTML = `<div class="alert alert-warning text-center">Sign in to post.</div>`;
-
-        // Limit posts to 5
-        const postsElements = document.querySelectorAll(".post");
-        postsElements.forEach((post, index) => {
-            if (index >= 5) {
-                post.style.display = "none";
-            }
-        });
-
-        // Disable like and comment buttons
-        document.querySelectorAll(".like-btn, .comment-btn").forEach(btn => {
-            btn.setAttribute("disabled", "true");
-            btn.classList.add("disabled");
-        });
     } else {
-        // Show logout button
         authButtonContainer.innerHTML = `<button class="btn btn-outline-light" id="logoutButton">Logout</button>`;
         document.getElementById("logoutButton").addEventListener("click", function () {
             alert("Logging out...");
