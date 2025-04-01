@@ -1,25 +1,43 @@
 const express = require("express");
 const session = require('express-session');
 const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Types;
 const path = require("path");
 const exphbs = require("express-handlebars");
 require("dotenv").config();
+
+// Models
+const Post = require("./models/postModel");
+const User = require("./models/userModel");
+const Comment = require("./models/commentModel"); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/forumDB")
-    .then(() => console.log("✅ Connected to MongoDB"))
-    .catch(err => console.error("❌ MongoDB connection error:", err));
+mongoose.connect("mongodb://localhost:27017/")
+    .then(() => console.log("Connected to MongoDB"))
+    .catch(err => console.error("MongoDB connection error:", err));
 
-// Set up Handlebars
-const hbs = exphbs.create({
-    extname: ".hbs", // Use .hbs as the file extension
-    defaultLayout: "main", // Use main.hbs as the default layout
-    layoutsDir: path.join(__dirname, "views/layouts"), // Specify the layouts directory
-    partialsDir: path.join(__dirname, "views/partials") // Specify the partials directory
-});
+    const hbs = exphbs.create({
+        extname: ".hbs",
+        defaultLayout: "main",
+        layoutsDir: path.join(__dirname, "views/layouts"),
+        partialsDir: [
+            path.join(__dirname, "views/partials"), // Primary partials directory
+            path.join(__dirname, "views/components") // Optional additional directory
+        ],
+        helpers: {
+            eq: (a, b) => a === b,
+            subtract: (a, b) => a - b,
+            formatDate: (date) => {
+                if (!date) return '';
+                return new Date(date).toLocaleString();
+            },
+            toString: (value) => value?.toString(),
+            json: (context) => JSON.stringify(context, null, 2) // Useful for debugging
+        }
+    });
 
 app.engine("hbs", hbs.engine); // Set up the Handlebars engine
 app.set("view engine", "hbs"); // Set Handlebars as the view engine
@@ -30,7 +48,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.json()); // Parse JSON bodies
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files (CSS, JS, images)
 
-// Session setup (place this before routes)
+// Session setup 
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
@@ -41,31 +59,31 @@ app.use(session({
 // Middleware to make user session available to all views
 app.use((req, res, next) => {
     res.locals.showNavbar = true; // Show the navbar by default
-    res.locals.user = req.session.user;
+    res.locals.user = req.session.user || null; // Ensure it's `null` if undefined
     next();
 });
 
+
 // Route to render the homepage
-app.get("/", (req, res) => {
-    res.render("homepage", {
-        title: "AnimoBuzz - Home",
-        brandName: "AnimoBuzz",
-        sidebarLinks: [
-            { label: "Home", url: "/", active: true },
-            { label: "For You", url: "/fyp" },
-            { label: "Profile", url: "/user-profile" },
-            { label: "Communities", url: "/communities" }
-        ],
-        posts: [
-            { author: "Spongebob Squarepants", content: "BAYAYAYYA #BeeLine", avatar: "/images/spongebob.jpg" },
-            { author: "Patrick Star", content: "Huuuh #BeeLine", avatar: "/images/patrick.jpg" },
-            { author: "Squidward", content: "Spongebob!!! #BeeLine", avatar: "/images/squidward.jpg" },
-            { author: "Mr. Krabs", content: "$$$$$$ #BeeLine", avatar: "/images/krabs.jpg" },
-            { author: "Plankton", content: "Give me the secret recipe! #BeeLine", avatar: "/images/Plankton.jpg" },
-            { author: "Anonymous", content: "Meep #BeeLine" }
-        ],
-        trendingTopics: ["#BeeLine", "#AnimoBuzz", "#LatestNews"]
-    });
+app.get("/", async (req, res) => {
+    try {
+        const posts = await Post.find().lean(); // Fetch posts from MongoDB
+        res.render("homepage", {
+            title: "AnimoBuzz - Home",
+            brandName: "AnimoBuzz",
+            sidebarLinks: [
+                { label: "Home", url: "/", active: true },
+                { label: "For You", url: "/fyp" },
+                { label: "Profile", url: "/user-profile" },
+                { label: "Communities", url: "/communities" }
+            ],
+            posts, // Pass MongoDB posts
+            trendingTopics: ["#BeeLine", "#AnimoBuzz", "#LatestNews"]
+        });
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 // Route to render the communities page
@@ -223,68 +241,39 @@ app.get("/fyp", (req, res) => {
     });
 });
 
-// Route to render the user profile page
-app.get("/user-profile", (req, res) => {
-    res.render("user-profile", {
-        title: "User Profile - AnimoBuzz",
-        brandName: "AnimoBuzz",
-        sidebarLinks: [
-            { label: "Home", url: "/", active: false },
-            { label: "For You", url: "/fyp", active: false },
-            { label: "Profile", url: "/profile", active: true },
-            { label: "Communities", url: "/communities", active: false }
-        ],
-        user: {
-            avatar: "/images/spongebob.jpg",
-            name: "Spongebob",
-            username: "johndoe",
-            id: "123",
-            college: "College of Computer Studies",
-            program: "BSCS",
-            bio: "Aspiring software engineer and tech enthusiast!"
-        },
-        tabs: [
-            { id: "posts", label: "Posts", active: true },
-            { id: "events", label: "Events", active: false },
-            { id: "discussions", label: "Discussions", active: false }
-        ],
-        posts: [
-            { content: 'Public Post: "Best study spots in DLSU?"' },
-            { content: 'Anonymous Post: "How to manage my schedule better?"' }
-        ],
-        events: [],
-        discussions: [],
-        quickLinks: ["Settings", "Privacy", "Help Center"],
-        activeTab: {
-            posts: true,
-            events: false,
-            discussions: false
-        }
-    });
-});
+app.get('/user-profile/:userId?', async (req, res) => {
+    try {
+        const userId = req.params.userId || req.session.user?._id;
+        if (!userId) return res.redirect('/login');
 
-
-app.get("/signup", (req, res) => {
-    res.locals.showNavbar = false;
-    res.render("signup", {
-        title: "Sign Up",
-        brandName: "AnimoBuzz"
-    });
-});
-
-
-// Session setup
-app.use(session({
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
-}));
-
-// Middleware to make user session available to all views
-app.use((req, res, next) => {
-    res.locals.user = req.session.user;
-    next();
+        // Find user and their posts
+        const user = await User.findById(userId).lean();
+        // Fetch user's posts
+        const posts = await Post.find({ authorId:userId }).lean(); 
+            res.render('user-profile', {
+                user: {
+                    name: user.username,
+                    avatar: user.pfp_url || "/images/default-avatar.jpg",
+                    username: user.username,
+                    id_number: user.id_number,
+                    college: user.college,
+                    program: user.bio,
+                    bio: user.bio
+                },
+                posts: posts.map(post => ({
+                    _id: post._id,
+                    content: post.content,
+                    createdAt: post.createdAt,
+                    upvotes: post.upvotes || 0,
+                    downvotes: post.downvotes || 0,
+                    authorId: post.authorId.toString(),
+                    currentUserVote: "none" // Modify this logic as per voting system
+                }))
+            });
+    } catch (error) {
+        console.error("Error loading user profile:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 // Login route (GET)
@@ -296,19 +285,38 @@ app.get("/login", (req, res) => {
     });
 });
 
-// Login route (POST)
-app.post("/login", (req, res) => {
-    const { username, password } = req.body;
+// Login Route (POST) - MongoDB Version
+app.post('/users/login', async (req, res) => {
+    const { email, password } = req.body;
 
-    // Example: Check if username and password are valid
-    if (username === "admin" && password === "password") {
-        // Set user session
-        req.session.user = { username: username };
-        // Redirect to the homepage on successful login
-        res.redirect("/");
-    } else {
-        // Redirect back to the login page with an error message
-        res.redirect("/login?error=Invalid username or password");
+    try {
+        // 1. Find user by email
+        const user = await User.findOne({ email });
+
+        // 2. Check if user exists
+        if (!user) {
+            return res.redirect('/login?error=Invalid email or password');
+        }
+
+        // 3. Verify password (basic comparison - use bcrypt in production)
+        if (user.password !== password) {
+            return res.redirect('/login?error=Invalid email or password');
+        }
+
+        // 4. Create session
+        req.session.user = {
+            _id: user._id,
+            email: user.email,
+            username: user.username,
+            user_id: user.user_id
+        };
+
+        // 5. Redirect to homepage
+        res.redirect('/');
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.redirect('/login?error=Server error');
     }
 });
 
@@ -322,12 +330,211 @@ app.get("/logout", (req, res) => {
     });
 });
 
-// Home route
-app.get("/", (req, res) => {
-    res.render("home", {
-        title: "Home",
+app.get("/signup", (req, res) => {
+    res.locals.showNavbar = false;
+    res.render("signup", {
+        title: "Sign Up",
         brandName: "AnimoBuzz"
     });
+});
+
+// POST route for signup form submission
+app.post("/signup", (req, res) => {
+    const { Name, email, password, confirm_password, id_number, college, username, bio } = req.body;
+
+    // Validate input fields
+    if (password !== confirm_password) {
+        return res.redirect("/signup?error=Passwords do not match");
+    }
+
+    const newUser = {
+        Name,
+        email,
+        password, 
+        id_number,
+        college,
+        username,
+        bio
+    };
+
+    console.log("New user:", newUser);
+    res.redirect("/login");
+});
+
+
+// Upvote route
+app.post('/api/posts/:postId/upvote', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        // Check if user already voted
+        const existingVote = post.voters.find(v => 
+            v.user.toString() === req.session.user._id.toString()
+        );
+
+        if (existingVote) {
+            if (existingVote.voteType === 'upvote') {
+                // Remove upvote
+                post.upvotes--;
+                post.voters = post.voters.filter(v => 
+                    v.user.toString() !== req.session.user._id.toString()
+                );
+            } else {
+                // Change from downvote to upvote
+                post.downvotes--;
+                post.upvotes++;
+                existingVote.voteType = 'upvote';
+            }
+        } else {
+            // Add new upvote
+            post.upvotes++;
+            post.voters.push({
+                user: req.session.user._id,
+                voteType: 'upvote'
+            });
+        }
+
+        await post.save();
+        res.json({
+            upvotes: post.upvotes,
+            downvotes: post.downvotes,
+            netVotes: post.upvotes - post.downvotes,
+            currentUserVote: existingVote?.voteType || null
+        });
+    } catch (error) {
+        console.error('Upvote error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/posts/:postId/downvote', async (req, res) => {
+    try {
+        if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        const existingVote = post.voters.find(v => 
+            v.user.toString() === req.session.user._id.toString()
+        );
+
+        if (existingVote) {
+            if (existingVote.voteType === 'downvote') {
+                post.downvotes--;
+                post.voters = post.voters.filter(v => 
+                    v.user.toString() !== req.session.user._id.toString()
+                );
+            } else {
+                post.upvotes--;
+                post.downvotes++;
+                existingVote.voteType = 'downvote';
+            }
+        } else {
+            post.downvotes++;
+            post.voters.push({
+                user: req.session.user._id,
+                voteType: 'downvote'
+            });
+        }
+
+        await post.save();
+        res.json({
+            upvotes: post.upvotes,
+            downvotes: post.downvotes,
+            netVotes: post.upvotes - post.downvotes,
+            currentUserVote: existingVote?.voteType || null
+        });
+    } catch (error) {
+        console.error('Downvote error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Import Routes
+const userRoutes = require("./routes/userRoutes");
+const postRoutes = require("./routes/postRoutes");
+const commentRoutes = require("./routes/commentRoutes");
+
+// Register Routes
+app.use("/users", userRoutes); // Now all /users routes will work
+app.use("/posts", postRoutes);   // Handles all /posts routes
+app.use("/comments", commentRoutes); // Handles all /comments routes
+
+
+// Delete Post Route (already in your server.js)
+app.delete('/api/posts/:postId', async (req, res) => {
+    try {
+        const postId = req.params.postId;
+
+        // Find post first to verify ownership
+        const post = await Post.findById(postId);
+        
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+               
+        // Delete the post
+        await Post.findByIdAndDelete(postId);
+        
+        // Optionally delete associated comments
+        await Comment.deleteMany({ post: postId });
+        
+        res.status(200).json({ message: 'Post deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.delete('/api/users/delete-account', async (req, res) => {
+    try {
+        const userId = req.session.user?._id;
+        
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Verify the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Delete all user's posts and comments
+        await Promise.all([
+            Post.deleteMany({ authorId: userId }),
+            Comment.deleteMany({ authorId: userId })
+        ]);
+
+        // Delete the user account
+        await User.findByIdAndDelete(userId);
+
+        // Destroy session
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Session destruction error:', err);
+                return res.status(500).json({ error: 'Error logging out' });
+            }
+            
+            // Clear the session cookie
+            res.clearCookie('connect.sid');
+            res.status(200).json({ message: 'Account deleted successfully' });
+        });
+
+    } catch (error) {
+        console.error('Account deletion error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).send('Something went wrong!');
 });
 
 // Start the server

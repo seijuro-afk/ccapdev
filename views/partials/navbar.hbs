@@ -1,15 +1,20 @@
+{{#if showNavbar}}
 <nav class="navbar navbar-dark bg-dark sticky-top p-2">
-     <div class="container-fluid">
+    <div class="container-fluid">
         <a class="navbar-brand" href="#">{{brandName}}</a>
         <form class="d-flex">
             <input class="form-control me-2" type="search" placeholder="Search...">
             <button class="btn btn-success" type="submit">Search</button>
         </form>
+        <!-- Login/Logout Button -->
         {{#if user}}
             <a href="/logout" class="btn btn-danger">Logout</a>
         {{else}}
+        <div>
             <a href="/login" class="btn btn-primary">Login</a>
-            <a href="/signup" class="btn btn-primary">Sign Up</a>
+            <a href="/signup" class="btn btn-secondary ml-2">Sign Up</a>
+        </div>
         {{/if}}
     </div>
 </nav>
+{{/if}}

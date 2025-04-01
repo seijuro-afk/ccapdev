@@ -5,6 +5,7 @@ use forumDB;
 db.createCollection("users");
 db.users.insertMany([
     { 
+        email: "admin@gmail.com",
         username: "admin", 
         user_id: "@admin123",  // Unique user identifier
         id: 123,  // Not unique (multiple users can have the same)

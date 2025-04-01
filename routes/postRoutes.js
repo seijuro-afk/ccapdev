@@ -1,8 +1,18 @@
 const express = require("express");
-const { createPost, getPosts } = require("../controllers/postController");
+const { getAllPosts, createPost, votePost } = require("../controllers/postController");
 
 const router = express.Router();
+
+// Add middleware to ensure session is available
+router.use((req, res, next) => {
+    if (!req.session.user && req.path !== '/') {
+        return res.redirect('/login');
+    }
+    next();
+});
+
+router.get("/", getAllPosts);
 router.post("/create", createPost);
-router.get("/", getPosts);
+router.post("/:id/vote", votePost);
 
 module.exports = router;

@@ -21,11 +21,36 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Disable like and comment buttons
-        document.querySelectorAll(".like-btn, .comment-btn").forEach(btn => {
+        document.querySelectorAll(".upvote-btn, .downvote-btn").forEach(btn => {
             btn.setAttribute("disabled", "true");
             btn.classList.add("disabled");
+            btn.title = "Sign in to vote";
         });
     } else {
+        document.querySelectorAll(".upvote-btn, .downvote-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const postId = this.getAttribute("data-post-id");
+                const isUpvote = this.classList.contains("upvote-btn");
+                const countSpan = this.querySelector("span");
+
+                // Simulate sending vote to the server
+                fetch(`/posts/${postId}/vote`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: isUpvote ? "upvote" : "downvote" })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        countSpan.textContent = data.newCount;
+                    } else {
+                        alert("Error voting");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+        
         // Show logout button
         authButtonContainer.innerHTML = `<button class="btn btn-outline-light" id="logoutButton">Logout</button>`;
         document.getElementById("logoutButton").addEventListener("click", function () {
