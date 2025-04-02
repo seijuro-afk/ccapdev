@@ -1,0 +1,44 @@
+        <header class="thread-banner">
+            <h1>{{discussion.title}}</h1>
+            <p>Posted by {{discussion.author}} | {{discussion.date}}</p>
+        </header>
+        
+        <section class="thread-content">
+            <article class="original-post">
+                <p>{{discussion.content}}</p>
+                <div class="post-actions">
+                    <button class="upvote">Upvote</button>
+                    <button class="downvote">Downvote</button>
+                    <button class="report">Report</button>
+                </div>
+            </article>
+            
+            <section class="replies">
+                <h2>Replies</h2>
+                {{#each discussion.replies}}
+                    <div class="reply">
+                        <p>{{this.content}}</p>
+                        <div class="reply-actions">
+                            <button class="upvote">Upvote</button>
+                            <button class="downvote">Downvote</button>
+                            <button class="report">Report</button>
+                        </div>
+                    </div>
+                {{else}}
+                    <p>No replies yet.</p>
+                {{/each}}
+            </section>
+        </section>
+        
+        <aside class="sidebar">
+            <h3>Related Discussions</h3>
+            <ul>
+                {{#each relatedDiscussions}}
+                    <li><a href="{{this.link}}">{{this.title}}</a></li>
+                {{else}}
+                    <li>No related discussions.</li>
+                {{/each}}
+            </ul>
+        </aside>
+    
+    {{> backButton}}

@@ -1,0 +1,26 @@
+/* style2.css - For Discussion Thread*/
+.thread-banner {
+    background-color: #00703C;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+.thread-content {
+    margin: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+.post-actions button, .reply-actions button {
+    background: #B38FB1;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+.sidebar {
+    background: #D9B8B9;
+    padding: 15px;
+    margin: 20px;
+}
