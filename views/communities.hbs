@@ -1,0 +1,12 @@
+<h1>Communities</h1>
+    <ul>
+        {{#each communities}}
+            <li>
+                <a href="/communities/{{this.id}}">
+                    <h2>{{this.name}}</h2>
+                    <p>{{this.description}}</p>
+                </a>
+            </li>
+        {{/each}}
+    </ul>     
+{{> backButton}}

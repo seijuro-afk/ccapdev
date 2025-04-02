@@ -1,0 +1,74 @@
+body {
+    background-color: #F2DFE0;
+    color: #000;
+}
+.navbar {
+    background-color: #00703C !important;
+}
+.navbar-brand {
+    color: #F2DFE0 !important;
+    font-weight: bold;
+}
+.navbar-nav .nav-link {
+    color: #D9B8B9 !important;
+}
+.btn-success {
+    background-color: #00703C;
+    border: none;
+}
+.btn-outline-success {
+    color: #00703C;
+    border-color: #00703C;
+}
+.btn-outline-primary {
+    color: #B38FB1;
+    border-color: #B38FB1;
+}
+.card {
+    border: 1px solid #B38FB1;
+}
+.card-header {
+    background-color: #00703C;
+    color: white;
+}
+
+/* Style for the back button */
+.back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin: 10px; 
+}
+
+/* Hover effect for the back button */
+.back-button:hover {
+    background-color: #5a6268; 
+}
+
+.upvote-btn, .downvote-btn {
+    font-size: 1.2rem; /* Increase button size */
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.upvote-btn i, .downvote-btn i {
+    font-size: 1.5rem; /* Make icons larger */
+}
+
+.upvote-btn:hover i {
+    color: green;
+}
+
+.downvote-btn:hover i {
+    color: red;
+}
+
