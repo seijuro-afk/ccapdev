@@ -279,6 +279,7 @@ app.get('/user-profile/:userId?', async (req, res) => {
 
 // Login route (GET)
 app.get("/login", (req, res) => {
+    res.locals.showNavbar = false; // Hide the navbar on the login page
     res.render("login", {
         title: "Login",
         brandName: "AnimoBuzz",
