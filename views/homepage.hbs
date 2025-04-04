@@ -17,11 +17,12 @@
                     <form action="/posts/create" method="POST">
                         <textarea class="form-control" name="content" placeholder="What's buzzing?" rows="3"></textarea>
                         <div class="mt-2">
-                            <label for="postAuthor">Post As:</label>
-                            <input type="text" name="author" id="postAuthor" class="form-control" placeholder="Enter your name (optional)">
+                            <label for="postAuthor">Post As: <span id="username">{{loggedInUserName}}</span></label><br>
+                            <input type="checkbox" id="anonymousCheckbox" name="anonymous"> Post Anonymously
                         </div>
                         <button type="submit" class="btn btn-success mt-2 w-100">Post</button>
                     </form>
+
                 </div>
             </div>
 
@@ -89,6 +90,43 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const anonymousCheckbox = document.getElementById('anonymousCheckbox');
+        const loggedInUserName = "{{loggedInUserName}}"; // Assume this is passed into the template
+
+        // Handle form submission
+        const postForm = document.getElementById('postForm');
+        postForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            let author = loggedInUserName; // Default to logged-in user
+
+            // Check if the post is being made anonymously
+            if (anonymousCheckbox.checked) {
+                author = 'Anonymous';
+            }
+
+            const content = this.querySelector('[name="content"]').value;
+
+            // Send the post data to the server
+            try {
+                const response = await fetch('/posts/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author, content })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Handle successful post creation (e.g., update the UI)
+                    location.reload(); // For simplicity, just reload the page
+                } else {
+                    alert('Error creating post');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating post');
+            }
+        });
+
         // Upvote and Downvote Logic
         const voteBtns = document.querySelectorAll('.upvote-btn, .downvote-btn');
         voteBtns.forEach(btn => {

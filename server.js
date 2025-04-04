@@ -254,10 +254,11 @@ app.get('/user-profile/:userId?', async (req, res) => {
                 user: {
                     name: user.username,
                     avatar: user.pfp_url || "/images/default-avatar.jpg",
+                    email: user.email,
                     username: user.username,
                     id_number: user.id_number,
                     college: user.college,
-                    program: user.bio,
+                    program: user.program,
                     bio: user.bio
                 },
                 posts: posts.map(post => ({
@@ -530,6 +531,145 @@ app.delete('/api/users/delete-account', async (req, res) => {
     }
 });
 
+app.put("/api/posts/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { content } = req.body;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid post ID" });
+        }
+
+        if (!content || content.trim() === "") {
+            return res.status(400).json({ error: "Post content cannot be empty" });
+        }
+
+        const updatedPost = await Post.findByIdAndUpdate(
+            id,
+            { content },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedPost) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        res.json(updatedPost);
+    } catch (error) {
+        console.error("Error updating post:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// Route to handle profile update
+app.put('/api/users/update-profile', async (req, res) => {
+    try {
+        // Check if user is logged in
+        if (!req.session.user) {
+            return res.status(401).json({ error: 'Unauthorized - Please log in' });
+        }
+
+        const userId = req.session.user._id;
+        const { 
+            username, 
+            email, 
+            currentPassword, 
+            newPassword, 
+            college, 
+            id_number, 
+            bio, 
+            pfp_url 
+        } = req.body;
+
+
+        // Find the user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Prepare update object
+        const updates = {};
+        
+        if (id_number) updates.id_number = id_number;
+
+        // Update username if provided and different
+        if (username && username !== user.username) {
+            // Check if new username is already taken
+            const usernameExists = await User.findOne({ 
+                username, 
+                _id: { $ne: userId } // Exclude current user
+            });
+            if (usernameExists) {
+                return res.status(400).json({ error: 'Username already taken' });
+            }
+            updates.username = username;
+        }
+
+        // Update email if provided and different
+        if (email && email !== user.email) {
+            // Check if new email is already taken
+            const emailExists = await User.findOne({ 
+                email, 
+                _id: { $ne: userId } // Exclude current user
+            });
+            if (emailExists) {
+                return res.status(400).json({ error: 'Email already in use' });
+            }
+            updates.email = email;
+        }
+
+        // Update password if current password is verified
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ error: 'Current password is required to change password' });
+            }
+            
+            // Verify current password (plain text comparison - in production use bcrypt.compare)
+            if (currentPassword !== user.password) {
+                return res.status(401).json({ error: 'Current password is incorrect' });
+            }
+            
+            updates.password = newPassword;
+        }
+
+        // Update other fields if provided
+        if (college) updates.college = college;
+        if (bio) updates.bio = bio;
+        if (pfp_url) updates.pfp_url = pfp_url;
+
+        // If no updates were provided
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No changes provided' });
+        }
+
+        // Perform the update
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updates,
+            { new: true, runValidators: true }
+        ).select('-password'); // Exclude password from the returned user object
+
+        // Update session if username or email changed
+        if (updates.username || updates.email) {
+            req.session.user = {
+                ...req.session.user,
+                username: updatedUser.username,
+                email: updatedUser.email
+            };
+        }
+
+        res.json({
+            message: 'Profile updated successfully',
+            user: updatedUser
+        });
+
+    }catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
