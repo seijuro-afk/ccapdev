@@ -1,13 +1,35 @@
-        <div class="login-container">
-            <h2>AnimoBUZZ</h2>
-            {{#if errorMessage}}
-                <p class="error-message">{{errorMessage}}</p>
-            {{/if}}
-            <form action="/users/login" method="POST">
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow mt-5">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-success">AnimoBUZZ</h2>
+                        <p class="text-muted">Welcome back! Please login to your account</p>
+                    </div>
 
-            {{> backButton}}
+                    {{#if errorMessage}}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{errorMessage}}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {{/if}}
+
+                    <form action="/users/login" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-success btn-lg">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
+    </div>
+</div>
