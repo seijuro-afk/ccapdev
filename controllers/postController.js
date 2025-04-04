@@ -48,7 +48,20 @@ exports.createPost = async (req, res) => {
 
 exports.getAllPosts = async (req, res) => {
     try {
-        const posts = await Post.find().lean().sort({ createdAt: -1 });
+        const { sort } = req.query;
+        let sortOption = { createdAt: -1 }; // Default: newest first
+        
+        if (sort === 'popular') {
+            sortOption = { upvotes: -1 };
+        } else if (sort === 'oldest') {
+            sortOption = { createdAt: 1 };
+        } else if (sort === 'controversial') {
+            // For controversial posts, sort by the sum of upvotes and downvotes
+            // This shows posts with the most engagement (both positive and negative)
+            sortOption = { upvotes: 1, downvotes: 1 };
+        }
+
+        const posts = await Post.find().lean().sort(sortOption);
 
         for (let post of posts) {
             post.comments = await Comment.find({ postId: new mongoose.Types.ObjectId(post._id) }).lean();

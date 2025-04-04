@@ -8,9 +8,13 @@
 </head>
 <body>
     <header class="banner">
-        <h1>Community Name</h1>
-        <p>Community description goes here.</p>
-        <button id="join-leave-btn">Join</button>
+        <h1 id="community-name">Loading community...</h1>
+        <p id="community-description"></p>
+        <button id="join-leave-btn" class="loading">Join</button>
+        <div id="community-stats">
+            <span id="member-count">0 members</span>
+            <span id="discussion-count">0 discussions</span>
+        </div>
     </header>
     
     <nav class="tabs">
@@ -19,19 +23,36 @@
         <button class="tab" data-tab="members">Members</button>
     </nav>
     
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search discussions...">
+        <button id="search-btn">Search</button>
+    </div>
+    
     <section id="content">
         <div id="discussions" class="tab-content active">
+            <div class="loading-indicator">Loading discussions...</div>
+            <div class="error-message hidden"></div>
             <h2>Active Discussions</h2>
-            <ul id="discussion-list">
-                <li><a href="discussionthread.html">Discussion 1</a></li>
-                <li><a href="discussionthread.html">Discussion 2</a></li>
-            </ul>
+            <div class="sort-controls">
+                <select id="sort-by">
+                    <option value="recent">Most Recent</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+            <ul id="discussion-list" class="discussion-list"></ul>
+            <button id="load-more" class="hidden">Load More</button>
         </div>
+        
         <div id="events" class="tab-content">
+            <div class="loading-indicator">Loading events...</div>
             <h2>Upcoming Events</h2>
+            <ul id="event-list" class="event-list"></ul>
         </div>
+        
         <div id="members" class="tab-content">
+            <div class="loading-indicator">Loading members...</div>
             <h2>Community Members</h2>
+            <ul id="member-list" class="member-list"></ul>
         </div>
     </section>
     

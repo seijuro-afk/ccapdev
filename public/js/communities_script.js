@@ -1,43 +1,34 @@
-// script.js - JavaScript for Community and Discussion Pages
+document.addEventListener('DOMContentLoaded', () => {
+    // Handle form submission for creating communities
+    const createForm = document.querySelector('#create-community-form');
+    if (createForm) {
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(createForm);
+            const data = {
+                name: formData.get('name'),
+                description: formData.get('description')
+            };
 
-document.addEventListener("DOMContentLoaded", function() {
-    // Tab switching functionality
-    const tabs = document.querySelectorAll(".tab");
-    const contents = document.querySelectorAll(".tab-content");
-    
-    tabs.forEach(tab => {
-        tab.addEventListener("click", function() {
-            const target = this.getAttribute("data-tab");
-            contents.forEach(content => content.classList.remove("active"));
-            document.getElementById(target).classList.add("active");
-        });
-    });
-    
-    // Join/Leave community button toggle
-    const joinLeaveBtn = document.getElementById("join-leave-btn");
-    if (joinLeaveBtn) {
-        joinLeaveBtn.addEventListener("click", function() {
-            if (this.textContent === "Join") {
-                this.textContent = "Leave";
-                this.style.backgroundColor = "#D9B8B9";
-            } else {
-                this.textContent = "Join";
-                this.style.backgroundColor = "";
+            try {
+                const response = await fetch('/communities', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to create community');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while creating the community');
             }
         });
     }
-    
-    // Upvote/Downvote functionality
-    document.querySelectorAll(".upvote, .downvote").forEach(button => {
-        button.addEventListener("click", function() {
-            alert(`${this.textContent} clicked!`);
-        });
-    });
-    
-    // Report button alert
-    document.querySelectorAll(".report").forEach(button => {
-        button.addEventListener("click", function() {
-            alert("Reported this post.");
-        });
-    });
 });

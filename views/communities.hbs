@@ -1,12 +1,44 @@
-<h1>Communities</h1>
-    <ul>
+<div class="container mt-4">
+    <h1 class="mb-4">Communities</h1>
+    
+    {{#if user}}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Create New Community</h5>
+            <form id="create-community-form" action="/communities" method="POST">
+                <div class="form-group">
+                    <label for="name">Community Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Community</button>
+            </form>
+        </div>
+    </div>
+    {{/if}}
+
+    <div class="row">
         {{#each communities}}
-            <li>
-                <a href="/communities/{{this.id}}">
-                    <h2>{{this.name}}</h2>
-                    <p>{{this.description}}</p>
-                </a>
-            </li>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{this.name}}</h5>
+                    <p class="card-text">{{this.description}}</p>
+                    <p class="text-muted">Created by: {{this.creator.username}}</p>
+                    <p class="text-muted">Members: {{this.members.length}}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="/communities/{{this._id}}" class="btn btn-outline-primary">View Community</a>
+                </div>
+            </div>
+        </div>
         {{/each}}
-    </ul>     
-{{> backButton}}
+    </div>
+
+    {{> backButton}} 
+</div>
+
+<script src="/js/communities_script.js"></script>
