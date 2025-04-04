@@ -3,9 +3,9 @@
 A requirement for CCAPDEV
 
 ## Project Phases
-- [x] Phase 1 (For more reformatting)
-- [ ] Phase 2 (WIP)
-- [ ] Phase 3
+- [ ] Phase 1 
+- [ ] Phase 2 
+- [x] Phase 3
 
 ## Running the Program Locally
 
@@ -25,9 +25,9 @@ Ensure you have the following installed on your local machine:
    ```sh
    npm install
    ```
-4. Ensure `dotenv` is installed:
+4. Ensure `express` `express-handlebars` `mongoose` `dotenv` `bcrypt` is installed:
    ```sh
-   npm install dotenv
+   npm install express express-handlebars mongoose dotenv bcrypt
    ```
 5. **Setup the database** in MongoDB.
 6. Start the Node.js server:

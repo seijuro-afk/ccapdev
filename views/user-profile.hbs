@@ -17,10 +17,10 @@
                         <img src="{{user.avatar}}" alt="Profile" class="rounded-circle me-3" style="width: 100px; height: 100px;">
                         <div>
                             <h2 class="h4 mb-1">{{user.name}}</h2>
-                            <p class="text-muted mb-1">{{user.username}} | ID: {{user.id_number}}</p>
-                            <p class="text-muted small">{{user.college}} - {{user.program}}</p>
+                            <p class="text-muted mb-1">ID: {{user.id_number}}</p>
+                            <p class="text-muted small">{{user.college}}</p>
                             <p class="text-muted">{{user.bio}}</p>
-                            <button class="btn btn-success">Edit Profile</button>
+                            <button class="btn btn-success" id="editAccountBtn">Edit Profile</button>
                             <button class="btn btn-danger ms-2" id="deleteAccountBtn">Delete Account</button>
                         </div>
                     </div>
@@ -68,7 +68,10 @@
                             data-post-id="{{this._id}}">
                             ▼ Downvote ({{this.downvotes}})
                         </button>
-                                                <div class="d-flex justify-content-end mt-2">
+                        <div class="d-flex justify-content-end mt-2">
+                            <button class="btn btn-sm btn-outline-primary me-2 edit-post-btn" data-post-id="{{this._id}}">
+                                Edit Post
+                            </button>
                             <button class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{this._id}}">
                                 Delete Post
                             </button>
@@ -124,17 +127,6 @@
             </div>
         </div>
 
-        <!-- Right Sidebar -->
-        <div class="col-md-3 d-none d-md-block">
-            <div class="card">
-                <div class="card-header bg-success text-white">Quick Links</div>
-                <ul class="list-group list-group-flush">
-                    {{#each quickLinks}}
-                        <li class="list-group-item">{{this}}</li>
-                    {{/each}}
-                </ul>
-            </div>
-        </div>
 
         <!-- Back Button -->
         {{> backButton}}
@@ -146,15 +138,110 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Confirm Deletion</h5>
+                <h5 class="modal-title" id="modalTitle">Confirm Deletion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="d-inline-flex align-items-center gap-2">
+                    <label for="newTextEdit" class="form-label" style="margin-top: 0.3rem;">Edit Post:</label>
+                    <input type="text" id="newTextEdit" value="">
+                </div>
                 <p id="modalMessage">Are you sure you want to delete this?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="btn btn-primary" id="confirmEditBtn">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="editUsername" value="{{user.username}}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" value="{{user.email}}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editCollege" class="form-label">College</label>
+                            <select class="form-select" id="editCollege">
+                                <option value="">Select College</option>
+                                <option value="BAGCED" {{#if (eq user.college "BAGCED")}}selected{{/if}}>BAGCED</option>
+                                <option value="CLA" {{#if (eq user.college "CLA")}}selected{{/if}}>CLA</option>
+                                <option value="CCS" {{#if (eq user.college "CCS")}}selected{{/if}}>CCS</option>
+                                <option value="COS" {{#if (eq user.college "COS")}}selected{{/if}}>COS</option>
+                                <option value="GCOE" {{#if (eq user.college "GCOE")}}selected{{/if}}>GCOE</option>
+                                <option value="SOE" {{#if (eq user.college "SOE")}}selected{{/if}}>SOE</option>
+                                <option value="RVCOB" {{#if (eq user.college "RVCOB")}}selected{{/if}}>RVCOB</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editIdNumber" class="form-label">ID Number</label>
+                            <input type="text" class="form-control" id="editIdNumber" 
+                                value="{{user.id_number}}" 
+                                pattern="[0-9]{3}" 
+                                title="ID Number must be a 3-digit number" 
+                                required>
+                            <div class="invalid-feedback">
+                                Please provide a valid 3-digit ID number
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editBio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="editBio" rows="3">{{user.bio}}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editPfpUrl" class="form-label">Profile Picture URL</label>
+                        <input type="text" class="form-control" id="editPfpUrl" value="{{user.avatar}}">
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <h6>Change Password</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-danger d-none" id="editProfileError"></div>
+                    <div class="alert alert-success d-none" id="editProfileSuccess"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveProfileChanges">Save Changes</button>
             </div>
         </div>
     </div>
@@ -163,33 +250,103 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const errorElement = document.getElementById('editProfileError');
+        const successElement = document.getElementById('editProfileSuccess');
         let deleteTarget = null;
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         const deletePostBtns = document.querySelectorAll('.delete-post-btn');
+        const editPostBtns = document.querySelectorAll('.edit-post-btn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const confirmEditBtn = document.getElementById('confirmEditBtn');
+        const editAccountBtn = document.getElementById('editAccountBtn');
+        const saveProfileChangesBtn = document.getElementById('saveProfileChanges');
         const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+        const editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
 
-        // Delete Account
+        // Edit Post Button Handler
+        editPostBtns.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const postId = this.getAttribute("data-post-id");
+                
+                if (!postId || postId === "null" || postId.trim() === "") {
+                    console.error("Invalid postId:", postId);
+                    alert("Error: Unable to edit post. Invalid post ID.");
+                    return;
+                }
+
+                const postContent = document.querySelector(`.post-card[data-post-id="${postId}"] .card-text`);
+                const newTextEdit = document.getElementById("newTextEdit");
+                newTextEdit.value = postContent.textContent.trim();
+
+                document.getElementById("modalTitle").textContent = "Edit Post";
+                document.getElementById("modalMessage").style.display = "none";
+                document.getElementById("confirmDeleteBtn").style.display = "none";
+                document.getElementById("newTextEdit").style.display = "block";
+                document.getElementById("confirmEditBtn").style.display = "block";
+
+                // Clear previous event listeners
+                const confirmEditBtn = document.getElementById("confirmEditBtn");
+                confirmEditBtn.replaceWith(confirmEditBtn.cloneNode(true));
+                
+                document.getElementById("confirmEditBtn").onclick = async () => {
+                    const updatedContent = newTextEdit.value.trim();
+
+                    if (!updatedContent) {
+                        alert("Post content cannot be empty!");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/posts/${postId}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ content: updatedContent })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error("Failed to update post");
+                        }
+
+                        const result = await response.json();
+                        postContent.textContent = result.content;
+                        modal.hide();
+                    } catch (error) {
+                        console.error("Error updating post:", error);
+                        alert("Something went wrong. Please try again.");
+                    }
+                };
+
+                modal.show();
+            });
+        });
+
+        // Delete Account Button Handler
         deleteAccountBtn.addEventListener('click', function() {
             document.getElementById('modalMessage').textContent = "Are you sure you want to delete your account? This cannot be undone.";
+            document.getElementById('modalMessage').style.display = "block";
+            document.getElementById('confirmDeleteBtn').style.display = 'block';
+            document.getElementById('confirmEditBtn').style.display = 'none';
+            document.getElementById('newTextEdit').style.display = 'none';
             deleteTarget = 'account';
             modal.show();
         });
 
-        // Delete Post
+        // Delete Post Button Handler
         deletePostBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 const postId = this.getAttribute('data-post-id');
-                console.log(postId);
+                document.getElementById('modalMessage').style.display = "block";
                 document.getElementById('modalMessage').textContent = "Are you sure you want to delete this post?";
+                document.getElementById('confirmDeleteBtn').style.display = 'block';
+                document.getElementById('confirmEditBtn').style.display = 'none';
+                document.getElementById('newTextEdit').style.display = 'none';
                 deleteTarget = { type: 'post', id: postId };
-                console.log(deleteTarget);
                 modal.show();
-                console.log('ok');
             });
         });
 
-        // Confirm Deletion
+        // Confirm Deletion Button Handler
         confirmDeleteBtn.addEventListener('click', async function() {
             if (deleteTarget === 'account') {
                 // Handle account deletion
@@ -235,5 +392,122 @@
             modal.hide();
         });
 
+        // Edit Profile Button Handler
+        editAccountBtn.addEventListener('click', function() {
+            editProfileModal.show();
+        });
+
+        // Save Profile Changes Button Handler
+        saveProfileChangesBtn.addEventListener('click', async function() {
+            // Get form values
+            const username = document.getElementById('editUsername').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const college = document.getElementById('editCollege').value;
+            const idNumber = document.getElementById('editIdNumber').value.trim();
+            const bio = document.getElementById('editBio').value.trim();
+            const pfp_url = document.getElementById('editPfpUrl').value.trim();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Reset messages
+            errorElement.classList.add('d-none');
+            successElement.classList.add('d-none');
+            
+            // Validate ID Number
+            if (!idNumber) {
+                showError('ID Number is required');
+                return;
+            }
+
+            if (!/^\d{3}$/.test(idNumber)) {
+                showError('ID Number must be exactly 3 digits');
+                return;
+            }
+
+            // Validate password if changing
+            if (newPassword || currentPassword || confirmPassword) {
+                const passwordErrors = [];
+                
+                if (!currentPassword) {
+                    passwordErrors.push('Current password is required to change password');
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    passwordErrors.push('Passwords do not match');
+                }
+                
+                if (newPassword) {
+                    if (newPassword.length <= 8) {
+                        passwordErrors.push('Password must be longer than 8 characters');
+                    }
+                    if (!/\d/.test(newPassword)) {
+                        passwordErrors.push('Password must contain at least one number');
+                    }
+                    if (!/[A-Z]/.test(newPassword)) {
+                        passwordErrors.push('Password must contain at least one capital letter');
+                    }
+                }
+                
+                if (passwordErrors.length > 0) {
+                    showError(passwordErrors.join('<br>'));
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        college,
+                        id_number: idNumber,
+                        bio,
+                        pfp_url,
+                        currentPassword: currentPassword || undefined,
+                        newPassword: newPassword || undefined
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to update profile');
+                }
+                
+                // Show success message
+                successElement.textContent = 'Profile updated successfully!';
+                successElement.classList.remove('d-none');
+                
+                // Update the displayed profile info
+                document.querySelector('.card-body h2').textContent = username;
+                document.querySelector('.card-body p:nth-of-type(1)').textContent = `ID: ${idNumber}`;
+                document.querySelector('.card-body p:nth-of-type(2)').textContent = college;
+                document.querySelector('.card-body p:nth-of-type(3)').textContent = bio;
+                document.querySelector('.card-body img').src = pfp_url || "/images/default-avatar.jpg";
+                
+                // Clear password fields
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    editProfileModal.hide();
+                }, 2000);
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        function showError(message) {
+            errorElement.innerHTML = message;
+            errorElement.classList.remove('d-none');
+        }
     });
 </script>
