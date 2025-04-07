@@ -13,13 +13,14 @@ exports.createPost = async (req, res) => {
         }
 
         const newPost = new Post({
-            author: user.username || "Anonymous", // Use username if available
-            authorEmail: user.email, // Store the email
+            author: user.username || "Anonymous",
+            authorEmail: user.email,
             content: content,
             upvotes: 0,
             downvotes: 0,
-            authorId: user._id, // Store user ID for reference
-            comments: [] // Initialize the comments array as empty
+            authorId: user._id,
+            communityId: req.body.communityId, // Add community reference
+            comments: []
         });
         
         
@@ -60,7 +61,7 @@ exports.getAllPosts = async (req, res) => {
             sortOption = { upvotes: 1, downvotes: 1 };
         }
 
-        const posts = await Post.find().lean().sort(sortOption);
+        const posts = await Post.find(req.query.communityId ? {communityId: req.query.communityId} : {}).lean().sort(sortOption);
 
         for (let post of posts) {
             post.comments = await Comment.find({ postId: new mongoose.Types.ObjectId(post._id) }).lean();

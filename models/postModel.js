@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema({
     author: { type: String, required: true },
     authorEmail: { type: String, required: true },
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    communityId: { type: mongoose.Schema.Types.ObjectId, ref: 'Community' },
     avatar: { type: String, default: "/images/spongebob.jpg" },
     upvotes: { type: Number, default: 0 },
     downvotes: { type: Number, default: 0 },

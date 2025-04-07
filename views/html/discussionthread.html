@@ -4,50 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discussion Thread</title>
-    <link rel="stylesheet" href="../css/style2.css">
+    <title>{{title}} | {{brandName}}</title>
+    <link rel="stylesheet" href="/css/style2.css">
+    <style>
+        .vote-feedback {
+            color: green;
+            margin-left: 10px;
+        }
+        .avatar-small {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
     <header class="thread-banner">
-        <h1>Discussion Title</h1>
-        <p>Posted by User | Date</p>
+        <h1>{{discussion.title}}</h1>
+        <p>Posted by <img src="{{discussion.authorAvatar}}" class="avatar-small"> {{discussion.author}} | {{formatDate discussion.date}}</p>
     </header>
     
     <section class="thread-content">
         <article class="original-post">
-            <p>Original post content goes here...</p>
+            <p>{{discussion.content}}</p>
             <div class="post-actions">
-                <button class="upvote" data-post-id="{{post._id}}">
-                    Upvote (<span class="upvote-count">{{post.upvotes}}</span>)
+                <button class="upvote" data-post-id="{{discussion._id}}" autocomplete="new-password">
+                    ▲ Upvote (<span class="upvote-count">{{discussion.upvotes}}</span>)
                 </button>
-                <button class="downvote" data-post-id="{{post._id}}">
-                    Downvote (<span class="downvote-count">{{post.downvotes}}</span>)
+                <button class="downvote" data-post-id="{{discussion._id}}" autocomplete="new-password">
+                    ▼ Downvote (<span class="downvote-count">{{discussion.downvotes}}</span>)
                 </button>
                 <div class="vote-feedback"></div>
             </div>
         </article>
         
         <section class="replies">
-            <h2>Replies</h2>
+            <h2>Replies ({{discussion.replies.length}})</h2>
+            {{#each discussion.replies}}
             <div class="reply">
-                <p>Reply content...</p>
+                <div class="reply-header">
+                    <img src="{{this.authorAvatar}}" class="avatar-small">
+                    <span class="reply-author">{{this.author}}</span>
+                    <span class="reply-date">{{formatDate this.date}}</span>
+                </div>
+                <p>{{this.content}}</p>
                 <div class="reply-actions">
-                    <button class="upvote">Upvote</button>
-                    <button class="downvote">Downvote</button>
-                    <button class="report">Report</button>
+                    <button class="upvote" autocomplete="off">▲ Upvote</button>
+                    <button class="downvote" autocomplete="off">▼ Downvote</button>
                 </div>
             </div>
+            {{/each}}
         </section>
     </section>
     
     <aside class="sidebar">
         <h3>Related Discussions</h3>
         <ul>
-            <li><a href="#">Related Discussion 1</a></li>
-            <li><a href="#">Related Discussion 2</a></li>
+            {{#each relatedDiscussions}}
+            <li><a href="{{this.link}}">{{this.title}}</a></li>
+            {{else}}
+            <li>No related discussions found</li>
+            {{/each}}
         </ul>
     </aside>
     
-    <script src="../js/communities_script.js"></script>
+    <script src="/js/communities_script.js"></script>
 </body>
 </html>
