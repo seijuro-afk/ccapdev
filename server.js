@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require('express-session');
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
 const path = require("path");
@@ -301,7 +302,8 @@ app.post('/users/login', async (req, res) => {
         }
 
         // 3. Verify password (basic comparison - use bcrypt in production)
-        if (user.password !== password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.redirect('/login?error=Invalid email or password');
         }
 
@@ -341,7 +343,7 @@ app.get("/signup", (req, res) => {
 });
 
 // POST route for signup form submission
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
     const { Name, email, password, confirm_password, id_number, college, username, bio } = req.body;
 
     // Validate input fields
@@ -349,18 +351,39 @@ app.post("/signup", (req, res) => {
         return res.redirect("/signup?error=Passwords do not match");
     }
 
-    const newUser = {
-        Name,
-        email,
-        password, 
-        id_number,
-        college,
-        username,
-        bio
-    };
+    try {
+        // Check if email already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.redirect("/signup?error=Email already in use");
+        }
 
-    console.log("New user:", newUser);
-    res.redirect("/login");
+        // Check if username already exists
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            return res.redirect("/signup?error=Username already taken");
+        }
+
+        // Create new user (password will be hashed by pre-save hook)
+        const newUser = new User({
+            username,
+            email,
+            password, // Will be hashed automatically
+            id_number,
+            college,
+            bio: bio || "",
+            pfp_url: "/images/default-avatar.jpg"
+        });
+
+        await newUser.save();
+
+        // Redirect to login with success message
+        res.redirect("/login?signup=success");
+        
+    } catch (error) {
+        console.error("Signup error:", error);
+        res.redirect("/signup?error=Registration failed");
+    }
 });
 
 
