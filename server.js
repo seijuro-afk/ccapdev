@@ -65,10 +65,22 @@ app.use((req, res, next) => {
 });
 
 
-// Route to render the homepage
 app.get("/", async (req, res) => {
     try {
-        const posts = await Post.find().lean(); // Fetch posts from MongoDB
+        // Populate author information when fetching posts
+        const posts = await Post.find()
+            .populate('authorId', 'username pfp_url') // Get author details
+            .lean();
+        console.log(posts); // Log posts to see the structure;
+        // Process posts to ensure pfp_url is available
+        const processedPosts = posts.map(post => {
+            return {
+                ...post,
+                // Use either the populated authorId.pfp_url or fall back to post.avatar
+                displayPfp: post.authorId?.pfp_url || post.avatar || "/images/spongebob.jpg"
+            };
+        });
+        
         res.render("homepage", {
             title: "AnimoBuzz - Home",
             brandName: "AnimoBuzz",
@@ -78,7 +90,7 @@ app.get("/", async (req, res) => {
                 { label: "Profile", url: "/user-profile" },
                 { label: "Communities", url: "/communities" }
             ],
-            posts, // Pass MongoDB posts
+            posts: processedPosts,
             trendingTopics: ["#BeeLine", "#AnimoBuzz", "#LatestNews"]
         });
     } catch (error) {

@@ -16,7 +16,6 @@ exports.createPost = async (req, res) => {
             author: user.username || "Anonymous", // Use username if available
             authorEmail: user.email, // Store the email
             content: content,
-            avatar: user.username ? "/images/default-avatar.jpg" : undefined, // Only set avatar if not anonymous
             upvotes: 0,
             downvotes: 0,
             authorId: user._id, // Store user ID for reference
