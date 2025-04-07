@@ -33,10 +33,14 @@ mongoose.connect("mongodb://localhost:27017/")
             subtract: (a, b) => a - b,
             formatDate: (date) => {
                 if (!date) return '';
-                return new Date(date).toLocaleString();
+                return new Date(date).toLocaleString(); //
             },
             toString: (value) => value?.toString(),
-            json: (context) => JSON.stringify(context, null, 2) // Useful for debugging
+            json: (context) => JSON.stringify(context, null, 2), // Useful for debugging
+            includes: (array, value) => {
+                if (!array) return false;
+                return array.includes(value?.toString());
+            }
         }
     });
 
@@ -47,7 +51,13 @@ app.set("views", path.join(__dirname, "views")); // Specify the views directory
 // Set up middleware
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.json()); // Parse JSON bodies
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files (CSS, JS, images)
+app.use(express.static(path.join(__dirname, "public"), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+})); // Serve static files with proper headers
 
 // Session setup 
 app.use(session({
@@ -212,25 +222,55 @@ app.get("/communities/:id", (req, res) => {
 });
 
 // route to render the discussion thread page
-app.get("/discussionthread", (req, res) => {
-    res.render("discussionthread", {
-        title: "Discussion Thread",
-        brandName: "AnimoBuzz",
-        discussion: {
-            title: "Sample Discussion",
-            author: "User123",
-            date: "October 10, 2023",
-            content: "This is the original post content.",
-            replies: [
-                { content: "This is a reply." },
-                { content: "This is another reply." }
-            ]
-        },
-        relatedDiscussions: [
-            { title: "Related Discussion 1", link: "/discussion/1" },
-            { title: "Related Discussion 2", link: "/discussion/2" }
-        ]
-    });
+app.get("/discussionthread/:postId", async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).send("Invalid post ID");
+        }
+
+        // Fetch post with author details and populated comments
+        const post = await Post.findById(postId)
+            .populate('authorId', 'username pfp_url')
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'authorId',
+                    select: 'username pfp_url'
+                }
+            })
+            .lean();
+
+        if (!post) {
+            return res.status(404).send("Post not found");
+        }
+
+        // Format comments as replies
+        const replies = post.comments.map(comment => ({
+            content: comment.content,
+            author: comment.authorId?.username || 'Unknown',
+            authorAvatar: comment.authorId?.pfp_url || '/images/default-avatar.jpg',
+            date: comment.createdAt
+        }));
+
+        res.render("discussionthread", {
+            title: "Discussion Thread",
+            brandName: "AnimoBuzz",
+            discussion: {
+                title: post.content.substring(0, 50) + (post.content.length > 50 ? '...' : ''),
+                author: post.authorId?.username || 'Unknown',
+                authorAvatar: post.authorId?.pfp_url || '/images/default-avatar.jpg',
+                date: post.createdAt,
+                content: post.content,
+                replies: replies
+            },
+            relatedDiscussions: [] // Can be populated with real related posts later
+        });
+    } catch (error) {
+        console.error("Error loading discussion thread:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.get("/fyp", (req, res) => {
@@ -494,11 +534,13 @@ app.post('/api/posts/:postId/downvote', async (req, res) => {
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const communityRoutes = require("./routes/communityRoutes");
 
 // Register Routes
 app.use("/users", userRoutes); // Now all /users routes will work
 app.use("/posts", postRoutes);   // Handles all /posts routes
 app.use("/comments", commentRoutes); // Handles all /comments routes
+app.use("/communities", communityRoutes); // Handles all /communities routes
 
 
 // Delete Post Route (already in your server.js)

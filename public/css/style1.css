@@ -33,4 +33,42 @@ body {
     display: block;
 }
 
+/* Community Cards */
+.community-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.community-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.join-btn {
+    background: #00703C;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #c9302c;
+}
+
+
 
