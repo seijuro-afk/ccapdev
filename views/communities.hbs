@@ -1,44 +1,69 @@
-<div class="container mt-4">
-    <h1 class="mb-4">Communities</h1>
+{{!< main}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Communities</title>
+    <link rel="stylesheet" href="/css/communities.css?v=3">
+</head>
+<body>
+    {{> navbar}}
     
-    {{#if user}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Create New Community</h5>
-            <form id="create-community-form" action="/communities" method="POST">
+    <main class="container">
+        <h1>All Communities</h1>
+        
+        <section class="create-community-card">
+            <h2><i class="new-circle"></i> Create New Community</h2>
+            <form id="create-community-form" class="community-form">
                 <div class="form-group">
-                    <label for="name">Community Name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
+                    <label for="community-name">Community Name</label>
+                    <input type="text" id="community-name" name="name" maxlength="50" required>
+                    <span class="char-count"><span id="name-count">0</span>/50</span>
                 </div>
                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    <label for="community-desc">Description</label>
+                    <textarea id="community-desc" name="description" maxlength="200" required></textarea>
+                    <span class="char-count"><span id="desc-count">0</span>/200</span>
                 </div>
-                <button type="submit" class="btn btn-primary">Create Community</button>
+                <button type="submit" class="btn-primary">
+                    <i class="users"></i> Create Community
+                </button>
             </form>
-        </div>
-    </div>
-    {{/if}}
+        </section>
 
-    <div class="row">
-        {{#each communities}}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">{{this.name}}</h5>
-                    <p class="card-text">{{this.description}}</p>
-                    <p class="text-muted">Created by: {{this.creator.username}}</p>
-                    <p class="text-muted">Members: {{this.members.length}}</p>
+        <div class="communities-list">
+            {{#each communities}}
+            <div class="community-card" data-community-id="{{this._id}}">
+                <div class="card-header">
+                    <h3><a href="/communities/{{this._id}}">{{this.name}}</a></h3>
+                    <span class="member-count">{{this.members.length}} members</span>
                 </div>
+                <p class="card-description">{{this.description}}</p>
                 <div class="card-footer">
-                    <a href="/communities/{{this._id}}" class="btn btn-outline-primary">View Community</a>
+                    <span class="creator">Created by {{this.creator.username}}</span>
+                <div class="card-actions">
+                    <button class="btn join-btn" data-community-id="{{this._id}}">
+                        {{#if (includes this.members ../user._id)}}
+                            Leave
+                        {{else}}
+                            Join
+                        {{/if}}
+                    </button>
+                    {{#if (eq this.creator._id ../user._id)}}
+                    <button class="btn edit-btn" data-community-id="{{this._id}}">
+                        <i class="edit"></i>
+                    </button>
+                    <button class="btn delete-btn" data-community-id="{{this._id}}">
+                        <i class="trash"></i>
+                    </button>
+                    {{/if}}
+                </div>
                 </div>
             </div>
+            {{/each}}
         </div>
-        {{/each}}
-    </div>
+    </main>
 
-    {{> backButton}} 
-</div>
-
-<script src="/js/communities_script.js"></script>
+    <div id="notification-area" class="notification-area"></div>
+    <script src="/js/communities_script.js"></script>
+</body>
+</html>

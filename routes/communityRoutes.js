@@ -1,8 +1,13 @@
 const express = require('express');
-const { 
+const {
     getAllCommunities,
     getCommunity,
-    createCommunity
+    createCommunity,
+    updateCommunity,
+    joinCommunity,
+    leaveCommunity,
+    getDiscussionThread,
+    deleteCommunity
 } = require('../controllers/communityController');
 
 const router = express.Router();
@@ -17,6 +22,11 @@ router.use((req, res, next) => {
 
 router.get('/', getAllCommunities);
 router.get('/:id', getCommunity);
+router.get('/:id/discussionthread/:postId', getDiscussionThread);
 router.post('/', createCommunity);
+router.post('/:id/join', joinCommunity);
+router.post('/:id/leave', leaveCommunity);
+router.put('/:id', updateCommunity);
+router.delete('/:id', deleteCommunity);
 
 module.exports = router;
