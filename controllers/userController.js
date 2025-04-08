@@ -51,7 +51,7 @@ exports.registerUser = async (req, res) => {
         
         // Save hashed password, not the plaintext one
         const newUser = new User({
-            user_id,
+            //user_id,
             username,
             email,
             password: hashedPassword,
