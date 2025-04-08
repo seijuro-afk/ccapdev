@@ -6,21 +6,35 @@ exports.createPost = async (req, res) => {
     try {
         const { content } = req.body;
         
+        // Validate content length
+        if (!content || content.length < 1 || content.length > 500) {
+            return res.status(400).json({ 
+                error: 'Post content must be between 1 and 500 characters' 
+            });
+        }
+
         // Get user info from session
         const user = req.session.user;
         if (!user) {
             return res.status(401).redirect('/login');
         }
 
+        // Handle anonymous posts
+        const isAnonymous = req.body.anonymous === 'true';
+        const authorName = isAnonymous ? 'Anonymous' : user.username;
+        const authorEmail = isAnonymous ? 'anonymous@example.com' : user.email;
+        const authorId = isAnonymous ? null : user._id;
+
         const newPost = new Post({
-            author: user.username || "Anonymous",
-            authorEmail: user.email,
+            author: authorName,
+            authorEmail: authorEmail,
             content: content,
             upvotes: 0,
             downvotes: 0,
-            authorId: user._id,
-            communityId: req.body.communityId, // Add community reference
-            comments: []
+            authorId: authorId,
+            communityId: req.body.communityId,
+            comments: [],
+            isAnonymous: isAnonymous
         });
         
         
@@ -86,6 +100,9 @@ exports.getAllPosts = async (req, res) => {
 };
 
 // Enhanced votePost controller
+// Rate limiting storage
+const voteRateLimits = new Map();
+
 exports.votePost = async (req, res) => {
     try {
         const { id } = req.params;
@@ -93,6 +110,17 @@ exports.votePost = async (req, res) => {
         const userId = req.session.user?._id;
 
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        // Rate limiting check (1 vote per 2 seconds per user)
+        const now = Date.now();
+        const lastVoteTime = voteRateLimits.get(userId.toString()) || 0;
+        if (now - lastVoteTime < 2000) {
+            return res.status(429).json({ 
+                success: false, 
+                message: "You're voting too fast. Please wait 2 seconds between votes." 
+            });
+        }
+        voteRateLimits.set(userId.toString(), now);
 
         const post = await Post.findById(id);
         if (!post) return res.status(404).json({ success: false, message: "Post not found" });

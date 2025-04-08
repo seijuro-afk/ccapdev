@@ -1,14 +1,7 @@
 {{!< main}}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Communities</title>
-    <link rel="stylesheet" href="/css/communities.css?v=3">
-</head>
-<body>
-    {{> navbar}}
-    
-    <main class="container">
+<link rel="stylesheet" href="/css/communities.css?v=3">
+
+<main class="container">
         <h1>All Communities</h1>
         
         <section class="create-community-card">
@@ -41,13 +34,18 @@
                 <div class="card-footer">
                     <span class="creator">Created by {{this.creator.username}}</span>
                 <div class="card-actions">
-                    <button class="btn join-btn" data-community-id="{{this._id}}">
-                        {{#if (includes this.members ../user._id)}}
-                            Leave
-                        {{else}}
-                            Join
-                        {{/if}}
+                    {{#if (includes this.members ../user._id)}}
+                    <button class="btn leave-btn" data-community-id="{{this._id}}">
+                        Leave
                     </button>
+                    <button class="btn joined-btn" disabled data-community-id="{{this._id}}">
+                        Joined
+                    </button>
+                    {{else}}
+                    <button class="btn join-btn" data-community-id="{{this._id}}">
+                        Join
+                    </button>
+                    {{/if}}
                     {{#if (eq this.creator._id ../user._id)}}
                     <button class="btn edit-btn" data-community-id="{{this._id}}">
                         <i class="edit"></i>
@@ -61,9 +59,7 @@
             </div>
             {{/each}}
         </div>
-    </main>
+</main>
 
-    <div id="notification-area" class="notification-area"></div>
-    <script src="/js/communities_script.js"></script>
-</body>
-</html>
+<div id="notification-area" class="notification-area"></div>
+<script src="/js/communities_script.js"></script>

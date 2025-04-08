@@ -6,11 +6,32 @@ class CommunitiesManager {
 
   async init() {
     try {
+      console.log('Initializing communities system...');
       // Wait for DOM and verify elements
       await this.verifyDOMReady();
+      console.log('DOM ready, verifying elements exist...');
+      
+      // Verify critical elements exist before proceeding
+      const requiredElements = [
+        'create-community-form',
+        'communities-list',
+        'community-name',
+        'community-desc',
+        'name-count',
+        'desc-count'
+      ];
+      
+      for (const id of requiredElements) {
+        if (!document.getElementById(id) && !document.querySelector(`.${id}`)) {
+          throw new Error(`Required element not found: ${id}`);
+        }
+      }
+      
+      console.log('All required elements found, initializing...');
       this.cacheElements();
+      console.log('Elements cached, setting up event listeners...');
       this.setupEventListeners();
-      console.log('Communities system initialized');
+      console.log('Communities system initialized successfully');
     } catch (error) {
       console.error('Initialization failed:', error);
     }
@@ -27,34 +48,57 @@ class CommunitiesManager {
   }
 
   cacheElements() {
-    this.elements = {
-      createForm: document.getElementById('create-community-form'),
-      communitiesList: document.querySelector('.communities-list'),
-      nameInput: document.getElementById('community-name'),
-      descInput: document.getElementById('community-desc'),
-      nameCount: document.getElementById('name-count'),
-      descCount: document.getElementById('desc-count')
-    };
+    try {
+      console.log('Caching form elements...');
+      this.elements = {
+        createForm: document.getElementById('create-community-form'),
+        communitiesList: document.querySelector('.communities-list'),
+        nameInput: document.getElementById('community-name'),
+        descInput: document.getElementById('community-desc'),
+        nameCount: document.getElementById('name-count'),
+        descCount: document.getElementById('desc-count')
+      };
 
-    if (!this.elements.createForm || !this.elements.communitiesList) {
-      throw new Error('Required elements missing');
+      // Verify all elements exist
+      for (const [key, element] of Object.entries(this.elements)) {
+        if (!element) {
+          console.error(`Missing required element: ${key}`);
+          throw new Error(`Required element missing: ${key}`);
+        }
+      }
+
+      console.log('All required elements found:', this.elements);
+    } catch (error) {
+      console.error('Error caching elements:', error);
+      throw error;
     }
   }
 
   setupEventListeners() {
-    // Form submission
-    if (this.elements.createForm) {
-      this.elements.createForm.addEventListener('submit', (e) => this.handleCreateCommunity(e));
-    }
-    
-    // Character counters
-    if (this.elements.nameInput && this.elements.descInput) {
-      this.elements.nameInput.addEventListener('input', () => {
-        this.elements.nameCount.textContent = this.elements.nameInput.value.length;
-      });
-      this.elements.descInput.addEventListener('input', () => {
-        this.elements.descCount.textContent = this.elements.descInput.value.length;
-      });
+    try {
+      // Form submission
+      if (this.elements.createForm) {
+        this.elements.createForm.addEventListener('submit', (e) => this.handleCreateCommunity(e));
+      }
+      
+      // Character counters with null checks
+      if (this.elements.nameInput && this.elements.nameCount) {
+        this.elements.nameInput.addEventListener('input', () => {
+          if (this.elements.nameCount) {
+            this.elements.nameCount.textContent = this.elements.nameInput.value.length;
+          }
+        });
+      }
+
+      if (this.elements.descInput && this.elements.descCount) {
+        this.elements.descInput.addEventListener('input', () => {
+          if (this.elements.descCount) {
+            this.elements.descCount.textContent = this.elements.descInput.value.length;
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error setting up event listeners:', error);
     }
 
     // Delete buttons
@@ -82,7 +126,7 @@ class CommunitiesManager {
     });
 
     // Join/Leave buttons
-    document.querySelectorAll('.join-btn').forEach(btn => {
+    document.querySelectorAll('.btn.join-btn, .btn.leave-btn').forEach(btn => {
       btn?.addEventListener('click', (e) => this.handleJoinLeaveCommunity(e));
     });
   }
@@ -92,17 +136,27 @@ class CommunitiesManager {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     
+    // Client-side validation
+    const name = e.target.elements['name'].value.trim();
+    const description = e.target.elements['description'].value.trim();
+    
+    if (!name || name.length < 3) {
+      this.showNotification('Community name must be at least 3 characters', 'error');
+      return;
+    }
+    
+    if (!description || description.length < 10) {
+      this.showNotification('Description must be at least 10 characters', 'error');
+      return;
+    }
+
     this.showLoading(submitBtn);
     
     try {
-      const formData = new FormData(e.target);
       const response = await fetch('/communities', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          name: formData.get('name'),
-          description: formData.get('description')
-        })
+        body: JSON.stringify({ name, description })
       });
 
       if (response.ok) {
@@ -151,32 +205,70 @@ class CommunitiesManager {
   }
 
   async handleJoinLeaveCommunity(e) {
-    const target = e?.target?.closest('.join-btn');
-    if (!target) return;
-    
-    const communityId = target?.dataset?.communityId;
-    const currentAction = target.textContent.trim().toLowerCase();
-    const action = currentAction === 'join' ? 'join' : 'leave';
-    const originalText = target.innerHTML;
-
-    if (!communityId) return;
-
-    this.showLoading(target);
-    
     try {
+      console.log('Join/Leave button clicked');
+      const target = e?.target?.closest('.join-btn, .leave-btn');
+      if (!target) {
+        console.error('No target element found');
+        return;
+      }
+      
+      const communityId = target?.dataset?.communityId;
+      const card = target.closest('.community-card');
+      const isJoin = target.classList.contains('join-btn');
+      const action = isJoin ? 'join' : 'leave';
+      const originalText = target.innerHTML;
+
+      if (!communityId) {
+        console.error('No community ID found');
+        return;
+      }
+
+      console.log(`Attempting to ${action} community ${communityId}`);
+      this.showLoading(target);
+      
       const response = await fetch(`/communities/${communityId}/${action}`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Action successful:', data);
         this.showNotification(`Successfully ${action}ed community`, 'success');
-        if (data.memberCount !== undefined) {
-          target.closest('.community-card')
-            ?.querySelector('.member-count').textContent = `${data.memberCount} members`;
+        
+        try {
+          // Update member count if elements exist
+          const memberCount = card?.querySelector('.member-count');
+          if (data.memberCount !== undefined && memberCount) {
+            memberCount.textContent = `${data.memberCount} members`;
+          }
+          
+          // Toggle button visibility with null checks
+          const joinBtn = card?.querySelector('.btn.join-btn');
+          const leaveBtn = card?.querySelector('.btn.leave-btn');
+          const joinedBtn = card?.querySelector('.btn.joined-btn');
+          
+          if (joinBtn && leaveBtn && joinedBtn) {
+            if (isJoin) {
+              // Joined - hide join, show leave and joined buttons
+              joinBtn.style.display = 'none';
+              leaveBtn.style.display = '';
+              joinedBtn.style.display = '';
+            } else {
+              // Left - hide leave and joined, show join button  
+              joinBtn.style.display = '';
+              leaveBtn.style.display = 'none';
+              joinedBtn.style.display = 'none';
+            }
+          }
+        } catch (error) {
+          console.error('Error updating UI:', error);
         }
-        target.textContent = action === 'join' ? 'Leave' : 'Join';
       } else {
         const error = await response.json();
         this.showNotification(error.error || `${action} failed`, 'error');
@@ -190,30 +282,42 @@ class CommunitiesManager {
   }
 
   showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    const notificationArea = document.getElementById('notification-area');
-    notificationArea.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.classList.add('fade-out');
-      setTimeout(() => notification.remove(), 500);
-    }, 3000);
+    try {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      const notificationArea = document.getElementById('notification-area');
+      if (notificationArea) {
+        notificationArea.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.classList.add('fade-out');
+          setTimeout(() => notification.remove(), 500);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error showing notification:', error);
+    }
   }
 
   showLoading(button) {
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
   }
 
   resetLoading(button, originalText) {
-    button.disabled = false;
-    button.innerHTML = originalText;
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText;
+    }
   }
 
   showEditModal(community) {
+    if (!document.body) return;
+    
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
@@ -275,5 +379,7 @@ class CommunitiesManager {
   }
 }
 
-// Initialize the manager
-new CommunitiesManager();
+// Initialize the manager after DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new CommunitiesManager();
+});
