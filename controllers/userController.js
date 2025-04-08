@@ -44,9 +44,11 @@ exports.registerUser = async (req, res) => {
         // Hash the password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        /*
         // Generate a unique user_id
         const user_id = new mongoose.Types.ObjectId();
-
+        */
+        
         // Save hashed password, not the plaintext one
         const newUser = new User({
             user_id,
