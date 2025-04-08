@@ -38,3 +38,7 @@ Ensure you have the following installed on your local machine:
    ```
    http://localhost:3000/
    ```
+### Deployed Website
+Render has been used for the deployement of the website.
+   (https://animobuzz.onrender.com/)
+   
