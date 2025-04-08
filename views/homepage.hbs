@@ -92,22 +92,15 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const anonymousCheckbox = document.getElementById('anonymousCheckbox');
-        const loggedInUserName = "{{loggedInUserName}}"; // Assume this is passed into the template
-
-        // Handle form submission
+        const loggedInUserName = "{{loggedInUserName}}";
         const postForm = document.getElementById('postForm');
+
+        // Handle post creation
         postForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-            let author = loggedInUserName; // Default to logged-in user
-
-            // Check if the post is being made anonymously
-            if (anonymousCheckbox.checked) {
-                author = 'Anonymous';
-            }
-
             const content = this.querySelector('[name="content"]').value;
+            const author = anonymousCheckbox.checked ? 'Anonymous' : loggedInUserName;
 
-            // Send the post data to the server
             try {
                 const response = await fetch('/posts/create', {
                     method: 'POST',
@@ -116,81 +109,73 @@
                 });
 
                 const data = await response.json();
-                if (data.success) {
-                    // Handle successful post creation (e.g., update the UI)
-                    location.reload(); // For simplicity, just reload the page
-                } else {
-                    alert('Error creating post');
-                }
+                if (data.success) location.reload();
+                else alert('Error creating post');
             } catch (error) {
-                console.error('Error:', error);
+                console.error(error);
                 alert('Error creating post');
             }
         });
 
-        // Upvote and Downvote Logic
-        const voteBtns = document.querySelectorAll('.upvote-btn, .downvote-btn');
-        voteBtns.forEach(btn => {
+        // Upvote / Downvote
+        const voteButtons = document.querySelectorAll('.upvote-btn, .downvote-btn');
+        voteButtons.forEach(btn => {
             btn.addEventListener('click', async function () {
-                const postId = this.getAttribute('data-post-id');
+                const postId = this.dataset.postId;
                 const voteType = this.classList.contains('upvote-btn') ? 'upvote' : 'downvote';
-                const countSpan = this.querySelector('span');
 
-                // Send vote to the server
                 try {
-                    const response = await fetch(`/posts/${postId}/vote`, {
+                    const res = await fetch(`/posts/${postId}/vote`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ type: voteType })
                     });
-                    
-                    const data = await response.json();
+
+                    const data = await res.json();
                     if (data.success) {
-                        countSpan.textContent = data.newCount; // Update vote count
+                        const postCard = this.closest('.post');
+                        postCard.querySelector('.upvote-count').textContent = data.upvotes;
+                        postCard.querySelector('.downvote-count').textContent = data.downvotes;
                     } else {
-                        alert('Error voting');
+                        alert('Voting failed.');
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error voting');
+                } catch (err) {
+                    console.error(err);
+                    alert('Error voting.');
                 }
             });
         });
 
-        // Commenting Logic
+        // Comments
         const commentForms = document.querySelectorAll('.comment-form');
         commentForms.forEach(form => {
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const postId = this.getAttribute('data-post-id');
+                const postId = this.dataset.postId;
                 const author = this.querySelector('[name="author"]').value || 'Anonymous';
                 const content = this.querySelector('[name="content"]').value;
 
-                // Send comment to the server
                 try {
-                    const response = await fetch(`/comments/add`, {
+                    const res = await fetch('/comments/add', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ postId, author, content })
                     });
 
-                    const data = await response.json();
+                    const data = await res.json();
                     if (data.success) {
-                        // Add the comment to the UI
-                        const commentSection = document.getElementById(`comments-${postId}`);
+                        const commentsSection = document.getElementById(`comments-${postId}`);
                         const newComment = document.createElement('div');
-                        newComment.classList.add('border', 'rounded', 'p-2', 'my-1');
+                        newComment.classList.add('comment', 'border', 'rounded', 'p-2', 'my-1');
                         newComment.innerHTML = `<strong>${author}</strong>: ${content}`;
-                        commentSection.appendChild(newComment);
-
-                        // Clear the comment form
-                        this.querySelector('[name="content"]').value = '';
+                        commentsSection.appendChild(newComment);
+                        this.reset();
                     } else {
-                        alert('Error submitting comment');
+                        alert('Failed to add comment.');
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error submitting comment');
+                } catch (err) {
+                    console.error(err);
+                    alert('Error submitting comment.');
                 }
             });
         });
