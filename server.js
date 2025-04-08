@@ -495,45 +495,55 @@ app.get("/signup", (req, res) => {
 
 // POST route for signup form submission
 app.post("/signup", async (req, res) => {
-    const { Name, email, password, confirm_password, id_number, college, username, bio } = req.body;
-
-    // Validate input fields
-    if (password !== confirm_password) {
-        return res.redirect("/signup?error=Passwords do not match");
-    }
-
     try {
-        // Check if email already exists
-        const existingUser = await User.findOne({ email });
+        console.log("Received user data:", req.body);
+
+        let { username, email, password, confirm_password, id_number, college, bio } = req.body;
+        
+        if (password !== confirm_password) {
+            console.log("Passwords do not match.");
+            return res.status(400).render("signup", {
+                title: "Sign Up",
+                brandName: "AnimoBUZZ",
+                errorMessage: "Passwords do not match"
+            });
+        }
+
+        // Check if username or email already exists
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
         if (existingUser) {
-            return res.redirect("/signup?error=Email already in use");
+            console.log("Username or email already exists.");
+            return res.status(400).render("signup", {
+                title: "Sign Up",
+                brandName: "AnimoBUZZ",
+                errorMessage: "Username or email already exists"
+            });
         }
 
-        // Check if username already exists
-        const existingUsername = await User.findOne({ username });
-        if (existingUsername) {
-            return res.redirect("/signup?error=Username already taken");
-        }
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new user (password will be hashed by pre-save hook)
+        // Generate a unique user_id
+        const user_id = new mongoose.Types.ObjectId();
+
+        // Save hashed password, not the plaintext one
         const newUser = new User({
+            user_id,
             username,
             email,
-            password, // Will be hashed automatically
+            password: hashedPassword,
             id_number,
             college,
-            bio: bio || "",
-            pfp_url: "/images/default-avatar.jpg"
+            bio
         });
-        console.log(newUser);
+
         await newUser.save();
 
-        // Redirect to login with success message
-        res.redirect("/login?signup=success");
-        
+        console.log("User successfully registered:", newUser);
+        res.redirect("/login");
     } catch (error) {
-        console.error("Signup error:", error);
-        res.redirect("/signup?error=Registration failed");
+        console.error("Error registering user:", error);
+        res.status(500).json({ error: error.message });
     }
 });
 
