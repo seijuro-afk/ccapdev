@@ -524,11 +524,11 @@ app.post("/signup", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Generate a unique user_id
-        const user_id = new mongoose.Types.ObjectId();
+        //const user_id = new mongoose.Types.ObjectId();
 
         // Save hashed password, not the plaintext one
         const newUser = new User({
-            user_id,
+            //user_id,
             username,
             email,
             password: hashedPassword,
