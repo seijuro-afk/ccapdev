@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const Post = require("../models/postModel");
 
 // Ensure registerUser is defined
 exports.registerUser = async (req, res) => {
@@ -72,19 +73,10 @@ exports.loginUser = async (req, res) => {
         console.log("Raw request body:", req.body); // Add this line
         let { email, password } = req.body;
 
-        // Debug what's coming in before any processing
-        console.log("Original email:", email);
-        console.log("Original password:", password);
-        console.log("Password type:", typeof password);
 
         // Fix potential array values
         email = Array.isArray(email) ? email[0] : email;
         password = Array.isArray(password) ? password[0] : password;
-
-        // Debug after processing
-        console.log("Processed email:", email);
-        console.log("Processed password:", password);
-        console.log("Processed password length:", password.length);
 
 
         const user = await User.findOne({ email });
@@ -98,8 +90,6 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        console.log("User found. Stored hash:", user.password);
-        console.log("Stored hash length:", user.password.length);
 
         const isMatch = await bcrypt.compare(password, user.password);
         console.log("Password match?", isMatch);
@@ -113,7 +103,14 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        req.session.user = { username: user.username, email: user.email };
+        req.session.user = {
+            _id: user._id,
+            email: user.email,
+            username: user.username,
+            user_id: user.user_id,
+            loggedIn: true,
+            pfp_url: user.pfp_url
+        };
         console.log("Session set:", req.session.user);
 
         req.session.save(err => {
@@ -134,10 +131,67 @@ exports.loginUser = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username });
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json(user);
+        // Debugging: Log session info
+        console.log('Session data:', req.session);
+        
+        // Get user ID from params or session
+        let userId = req.params.userId;
+        
+        // If no userId in params, try to get from session
+        if (!userId && req.session.user?._id) {
+            userId = req.session.user._id;
+        }
+        
+        // If still no userId, redirect to login
+        if (!userId) {
+            console.log('No user ID found - redirecting to login');
+            return res.redirect('/login?error=Please login to view profile');
+        }
+
+        // Find user and their posts
+        const user = await User.findById(userId).lean();
+        if (!user) {
+            return res.status(404).render('error', { 
+                message: 'User not found',
+                brandName: "AnimoBuzz"
+            });
+        }
+
+        const posts = await Post.find({ authorId: userId })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        console.log(posts);
+
+        res.render('user-profile', {
+            title: `${user.username}'s Profile`,
+            brandName: "AnimoBuzz",
+            user: {
+                ...user,
+                avatar: user.pfp_url || "/images/default-avatar.jpg",
+                isCurrentUser: (!req.params.userId || req.params.userId === req.session.user?._id?.toString())
+            },
+            posts: posts.map(post => ({
+                _id: post._id,
+                content: post.content,
+                createdAt: post.createdAt,
+                upvotes: post.upvotes || 0,
+                downvotes: post.downvotes || 0,
+                authorId: post.authorId.toString(),
+                currentUserVote: "none" // Modify this logic as per voting system
+            })),
+            sidebarLinks: [
+                { label: "Home", url: "/", active: false },
+                { label: "For You", url: "/fyp", active: false },
+                { label: "Profile", url: `/user-profile/${userId}`, active: true },
+                { label: "Communities", url: "/communities", active: false }
+            ]
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error loading user profile:", error);
+        res.status(500).render('error', { 
+            message: 'Internal Server Error',
+            brandName: "AnimoBuzz"
+        });
     }
 };

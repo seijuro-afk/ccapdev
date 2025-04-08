@@ -16,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/")
+mongoose.connect("mongodb+srv://seanregindin:vhzjBONAcFo5ii6L@animobuzz.veaof.mongodb.net/")
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("MongoDB connection error:", err));
 
@@ -59,12 +59,15 @@ app.use(express.static(path.join(__dirname, "public"), {
     }
 })); // Serve static files with proper headers
 
-// Session setup 
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
+    saveUninitialized: false, // Changed from true to false for security
+    cookie: { 
+        secure: false, // Set to true if using HTTPS
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
+
 }));
 
 // Middleware to make user session available to all views
@@ -81,7 +84,19 @@ const sampleUsers = [
     { username: 'sandy', password: 'password4', email: 'sandy@example.com' },
     { username: 'krabs', password: 'password5', email: 'krabs@example.com' }
   ];
-  
+
+    // Import Routes
+    const userRoutes = require("./routes/userRoutes");
+    const postRoutes = require("./routes/postRoutes");
+    const commentRoutes = require("./routes/commentRoutes");
+    const communityRoutes = require("./routes/communityRoutes");
+
+    // Register Routes
+    //app.use("/users", userRoutes); // Now all /users routes will work
+    app.use("/posts", postRoutes);   // Handles all /posts routes
+    app.use("/comments", commentRoutes); // Handles all /comments routes
+    app.use("/communities", communityRoutes); // Handles all /communities routes
+    
   // Ensure sample users and posts are created on server start
   async function createSampleUsersAndPosts() {
     for (let user of sampleUsers) {
@@ -115,25 +130,33 @@ app.get("/", async (req, res) => {
     try {
         // Populate author information when fetching posts
         const posts = await Post.find()
-            .populate('authorId', 'username pfp_url') // Get author details
-            .lean();
-        console.log(posts); // Log posts to see the structure;
+        .sort({ created_at: -1 }) // Sort by created_at field in descending order (-1)
+        .populate('authorId', 'username pfp_url') // Get authorId and pfp_url
+        .populate('comments')
+        .lean();
+
+            
         // Process posts to ensure pfp_url is available
         const processedPosts = posts.map(post => {
             return {
                 ...post,
                 // Use either the populated authorId.pfp_url or fall back to post.avatar
-                displayPfp: post.authorId?.pfp_url || post.avatar || "/images/spongebob.jpg"
+                displayPfp: post.authorId?.pfp_url || post.avatar || "/images/spongebob.jpg",
+                // Format comment dates if needed
+                comments: post.comments?.map(comment => ({
+                    ...comment,
+                    created_at: new Date(comment.created_at).toLocaleString()
+                })) || []
             };
         });
-        
+
         res.render("homepage", {
             title: "AnimoBuzz - Home",
             brandName: "AnimoBuzz",
             sidebarLinks: [
                 { label: "Home", url: "/", active: true },
                 { label: "For You", url: "/fyp" },
-                { label: "Profile", url: "/user-profile" },
+                { label: "Profile", url: `/user-profile/${req.session.user?._id || ''}` },
                 { label: "Communities", url: "/communities" }
             ],
             posts: processedPosts,
@@ -332,37 +355,76 @@ app.get("/fyp", (req, res) => {
 
 app.get('/user-profile/:userId?', async (req, res) => {
     try {
-        const userId = req.params.userId || req.session.user?._id;
-        if (!userId) return res.redirect('/login');
+        // Get user ID from params or session
+        let userId = req.params.userId;
+        
+        if (!userId && req.session.user?._id) {
+            userId = req.session.user._id;
+        }
+        
+        if (!userId) {
+            return res.redirect('/login?error=Please login to view profile');
+        }
 
-        // Find user and their posts
-        const user = await User.findById(userId).lean();
-        // Fetch user's posts
-        const posts = await Post.find({ authorId:userId }).lean(); 
-            res.render('user-profile', {
-                user: {
-                    name: user.username,
-                    avatar: user.pfp_url || "/images/default-avatar.jpg",
-                    email: user.email,
-                    username: user.username,
-                    id_number: user.id_number,
-                    college: user.college,
-                    program: user.program,
-                    bio: user.bio
-                },
-                posts: posts.map(post => ({
-                    _id: post._id,
-                    content: post.content,
-                    createdAt: post.createdAt,
-                    upvotes: post.upvotes || 0,
-                    downvotes: post.downvotes || 0,
-                    authorId: post.authorId.toString(),
-                    currentUserVote: "none" // Modify this logic as per voting system
-                }))
+        // Convert to ObjectId if not already
+        const userIdObj = new mongoose.Types.ObjectId(userId);
+
+        const user = await User.findById(userIdObj).lean();
+        
+        if (!user) {
+            return res.status(404).render('error', { 
+                message: 'User not found',
+                brandName: "AnimoBuzz"
             });
+        }
+
+        const posts = await Post.find({ authorId: userIdObj })
+            .sort({ createdAt: -1 })
+            .lean();
+        
+
+        // Format posts for template
+        const formattedPosts = posts.map(post => ({
+
+            _id: post._id.toString(),
+            content: post.content,
+            createdAt: post.createdAt,
+            upvotes: post.upvotes || 0,
+        }));
+
+        res.render('user-profile', {
+            title: `${user.username}'s Profile`,
+            brandName: "AnimoBuzz",
+            user: {
+                ...user,
+                id_number: user.id_number || 'N/A',
+                college: user.college || 'Not specified',
+                bio: user.bio || '',
+                avatar: user.pfp_url || "/images/default-avatar.jpg",
+                isCurrentUser: (!req.params.userId || req.params.userId === req.session.user?._id?.toString())
+            },
+            posts: formattedPosts,
+            sidebarLinks: [
+                { label: "Home", url: "/", active: false },
+                { label: "For You", url: "/fyp", active: false },
+                { label: "Profile", url: `/user-profile/${req.session.user?._id}`, active: true },
+                { label: "Communities", url: "/communities", active: false }
+            ],
+            // Add these helpers if not already registered globally
+            helpers: {
+                eq: (a, b) => a === b,
+                subtract: (a, b) => a - b,
+                formatDate: (date) => new Date(date).toLocaleString()
+            }
+        });
+
     } catch (error) {
         console.error("Error loading user profile:", error);
-        res.status(500).send("Internal Server Error");
+        console.error(error.stack);
+        res.status(500).render('error', { 
+            message: 'Internal Server Error',
+            brandName: "AnimoBuzz"
+        });
     }
 });
 
@@ -376,35 +438,36 @@ app.get("/login", (req, res) => {
     });
 });
 
-// Login Route (POST) - MongoDB Version
+// Login Route (POST) 
 app.post('/users/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1. Find user by email
         const user = await User.findOne({ email });
-
-        // 2. Check if user exists
         if (!user) {
-            return res.redirect('/login?error=Invalid email or password');
+            return res.redirect('/login?error=Invalid credentials');
         }
 
-        // 3. Verify password (basic comparison - use bcrypt in production)
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.redirect('/login?error=Invalid email or password');
+            return res.redirect('/login?error=Invalid credentials');
         }
 
-        // 4. Create session
-        req.session.user = {
-            _id: user._id,
-            email: user.email,
-            username: user.username,
-            user_id: user.user_id
+         req.session.user = {
+                    _id: user._id,
+                    email: user.email,
+                    username: user.username,
+                    user_id: user.user_id
         };
-
-        // 5. Redirect to homepage
-        res.redirect('/');
+        console.log('User session:', req.session.user); // Debugging: Log user session
+        // Save session before redirect
+        req.session.save(err => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.redirect('/login?error=Session error');
+            }
+            res.redirect('/');
+        });
 
     } catch (error) {
         console.error('Login error:', error);
@@ -565,19 +628,6 @@ app.post('/api/posts/:postId/downvote', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-// Import Routes
-const userRoutes = require("./routes/userRoutes");
-const postRoutes = require("./routes/postRoutes");
-const commentRoutes = require("./routes/commentRoutes");
-const communityRoutes = require("./routes/communityRoutes");
-
-// Register Routes
-app.use("/users", userRoutes); // Now all /users routes will work
-app.use("/posts", postRoutes);   // Handles all /posts routes
-app.use("/comments", commentRoutes); // Handles all /comments routes
-app.use("/communities", communityRoutes); // Handles all /communities routes
-
 
 // Delete Post Route (already in your server.js)
 app.delete('/api/posts/:postId', async (req, res) => {

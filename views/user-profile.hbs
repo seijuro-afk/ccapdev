@@ -16,120 +16,45 @@
                     <div class="d-flex align-items-center">
                         <img src="{{user.avatar}}" alt="Profile" class="rounded-circle me-3" style="width: 100px; height: 100px;">
                         <div>
-                            <h2 class="h4 mb-1">{{user.name}}</h2>
+                            <h2 class="h4 mb-1">{{user.username}}</h2> <!-- Changed from user.name to user.username -->
                             <p class="text-muted mb-1">ID: {{user.id_number}}</p>
                             <p class="text-muted small">{{user.college}}</p>
                             <p class="text-muted">{{user.bio}}</p>
-                            <button class="btn btn-success" id="editAccountBtn">Edit Profile</button>
-                            <button class="btn btn-danger ms-2" id="deleteAccountBtn">Delete Account</button>
+                            {{#if user.isCurrentUser}}
+                                <button class="btn btn-success" id="editAccountBtn">Edit Profile</button>
+                                <button class="btn btn-danger ms-2" id="deleteAccountBtn">Delete Account</button>
+                            {{/if}}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tab Nav -->
-            <ul class="nav nav-tabs mb-3">
-                {{#each tabs}}
-                    <li class="nav-item">
-                        <button class="nav-link {{#if this.active}}active{{/if}}" data-tab="{{this.id}}">{{this.label}}</button>
-                    </li>
-                {{/each}}
-            </ul>
-
-    <div id="posts-tab" class="tab-content {{#if activeTab.posts}}active{{/if}}">
-    {{#if posts.length}}
-        {{#each posts}}
-            <div class="card mb-3 post-card" data-post-id="{{this._id}}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <p class="card-text mb-2">{{this.content}}</p>
-                        <small class="text-muted">{{formatDate this.createdAt}}</small>
-                    </div>
-                
-                    <div class="vote-section mt-3">
-                        <button class="btn btn-sm 
-                            {{#if (eq this.currentUserVote 'upvote')}}
-                                btn-success
-                            {{else}}
-                                btn-outline-success
-                            {{/if}} upvote-btn" 
-                            data-post-id="{{this._id}}">
-                            ▲ Upvote ({{this.upvotes}})
-                        </button>
-                        
-                        <span class="mx-2">{{subtract this.upvotes this.downvotes}}</span>
-                        
-                        <button class="btn btn-sm 
-                            {{#if (eq this.currentUserVote 'downvote')}}
-                                btn-danger
-                            {{else}}
-                                btn-outline-danger
-                            {{/if}} downvote-btn" 
-                            data-post-id="{{this._id}}">
-                            ▼ Downvote ({{this.downvotes}})
-                        </button>
-                        <div class="d-flex justify-content-end mt-2">
-                            <button class="btn btn-sm btn-outline-primary me-2 edit-post-btn" data-post-id="{{this._id}}">
-                                Edit Post
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{this._id}}">
-                                Delete Post
-                            </button>
+                <div class="tab-pane fade show active" id="posts-tab">
+                    {{#if posts.length}}
+                        {{#each posts}}
+                        <div class="card mb-3 post-card" data-post-id="{{this._id}}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <p class="card-text mb-2">{{this.content}}</p>
+                                    <small class="text-muted">{{formatDate this.createdAt}}</small>
+                                </div>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-primary me-2 edit-post-btn" data-post-id="{{this._id}}">
+                                        Edit Post
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-post-btn" data-post-id="{{this._id}}">
+                                        Delete Post
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        {{/each}}
+                    {{else}}
+                        <p>No posts available.</p>
+                    {{/if}}
                 </div>
-            </div>
-        {{/each}}
-    {{else}}
-        <div class="card">
-            <div class="card-body">
-                <p class="text-muted">No posts to display yet.</p>
-            </div>
-        </div>
-    {{/if}}
-</div>
 
 
-            <div id="events-tab" class="tab-content {{#if activeTab.events}}active{{/if}}">
-                {{#if events}}
-                    {{#each events}}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <p class="card-text">{{this}}</p>
-                            </div>
-                        </div>
-                    {{/each}}
-                {{else}}
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="text-muted">No events to display yet.</p>
-                        </div>
-                    </div>
-                {{/if}}
-            </div>
-
-            <div id="discussions-tab" class="tab-content {{#if activeTab.discussions}}active{{/if}}">
-                {{#if discussions}}
-                    {{#each discussions}}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <p class="card-text">{{this}}</p>
-                            </div>
-                        </div>
-                    {{/each}}
-                {{else}}
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="text-muted">No discussions to display yet.</p>
-                        </div>
-                    </div>
-                {{/if}}
-            </div>
-        </div>
-
-
-        <!-- Back Button -->
-        {{> backButton}}
     </div>
 </div>
 
