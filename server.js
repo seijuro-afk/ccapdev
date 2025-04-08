@@ -439,7 +439,7 @@ app.get("/login", (req, res) => {
 });
 
 // Login Route (POST) 
-app.post('/users/login', async (req, res) => {
+app.post('/home', async (req, res) => {
     const { email, password } = req.body;
 
     try {
