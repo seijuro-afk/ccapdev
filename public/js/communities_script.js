@@ -206,75 +206,56 @@ class CommunitiesManager {
 
   async handleJoinLeaveCommunity(e) {
     try {
-      console.log('Join/Leave button clicked');
       const target = e?.target?.closest('.join-btn, .leave-btn');
-      if (!target) {
-        console.error('No target element found');
-        return;
-      }
+      if (!target) return;
       
-      const communityId = target?.dataset?.communityId;
+      const communityId = target.dataset.communityId;
       const card = target.closest('.community-card');
       const isJoin = target.classList.contains('join-btn');
       const action = isJoin ? 'join' : 'leave';
       const originalText = target.innerHTML;
 
-      if (!communityId) {
-        console.error('No community ID found');
-        return;
-      }
+      if (!communityId) return;
 
-      console.log(`Attempting to ${action} community ${communityId}`);
       this.showLoading(target);
       
       const response = await fetch(`/communities/${communityId}/${action}`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: {'Content-Type': 'application/json'}
       });
 
-      console.log('Response status:', response.status);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Action successful:', data);
-        this.showNotification(`Successfully ${action}ed community`, 'success');
-        
-        try {
-          // Update member count if elements exist
-          const memberCount = card?.querySelector('.member-count');
-          if (data.memberCount !== undefined && memberCount) {
-            memberCount.textContent = `${data.memberCount} members`;
-          }
-          
-          // Toggle button visibility with null checks
-          const joinBtn = card?.querySelector('.btn.join-btn');
-          const leaveBtn = card?.querySelector('.btn.leave-btn');
-          const joinedBtn = card?.querySelector('.btn.joined-btn');
-          
-          if (joinBtn && leaveBtn && joinedBtn) {
-            if (isJoin) {
-              // Joined - hide join, show leave and joined buttons
-              joinBtn.style.display = 'none';
-              leaveBtn.style.display = '';
-              joinedBtn.style.display = '';
-            } else {
-              // Left - hide leave and joined, show join button  
-              joinBtn.style.display = '';
-              leaveBtn.style.display = 'none';
-              joinedBtn.style.display = 'none';
-            }
-          }
-        } catch (error) {
-          console.error('Error updating UI:', error);
-        }
-      } else {
+      if (!response.ok) {
         const error = await response.json();
-        this.showNotification(error.error || `${action} failed`, 'error');
+        throw new Error(error.error || `${action} failed`);
       }
+
+      const data = await response.json();
+      this.showNotification(`Successfully ${action}ed community`, 'success');
+      
+      // Update UI
+      const memberCount = card.querySelector('.member-count');
+      if (memberCount) memberCount.textContent = `${data.memberCount} members`;
+      
+      const joinBtn = card.querySelector('.join-btn');
+      const leaveBtn = card.querySelector('.leave-btn');
+      const joinedBtn = card.querySelector('.joined-btn');
+      
+      if (isJoin) {
+        joinBtn?.classList.add('hidden');
+        leaveBtn?.classList.remove('hidden');
+        joinedBtn?.classList.remove('hidden');
+      } else {
+        joinBtn?.classList.remove('hidden');
+        leaveBtn?.classList.add('hidden');
+        joinedBtn?.classList.add('hidden');
+      }
+      
+      // Update community card styling
+      card.classList.toggle('joined-community', isJoin);
+      
     } catch (error) {
-      this.showNotification(`Error ${action}ing community`, 'error');
+      this.showNotification(error.message, 'error');
       console.error('Join/Leave error:', error);
     } finally {
       this.resetLoading(target, originalText);
