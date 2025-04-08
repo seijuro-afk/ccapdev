@@ -74,6 +74,42 @@ app.use((req, res, next) => {
     next();
 });
 
+const sampleUsers = [
+    { username: 'spongebob', password: 'password1', email: 'spongebob@example.com' },
+    { username: 'patrick', password: 'password2', email: 'patrick@example.com' },
+    { username: 'squidward', password: 'password3', email: 'squidward@example.com' },
+    { username: 'sandy', password: 'password4', email: 'sandy@example.com' },
+    { username: 'krabs', password: 'password5', email: 'krabs@example.com' }
+  ];
+  
+  // Ensure sample users and posts are created on server start
+  async function createSampleUsersAndPosts() {
+    for (let user of sampleUsers) {
+      const existingUser = await User.findOne({ username: user.username });
+      if (!existingUser) {
+        const newUser = await User.create(user);
+        for (let i = 1; i <= 5; i++) {
+          const post = await Post.create({
+            authorId: newUser._id,
+            content: `Post content ${i} by ${newUser.username}`,
+            upvotes: Math.floor(Math.random() * 100),
+            downvotes: Math.floor(Math.random() * 100)
+          });
+  
+          // Create 5 comments for each post
+          for (let j = 1; j <= 5; j++) {
+            await Comment.create({
+              postId: post._id,
+              author: `Commenter ${j}`,
+              content: `Comment ${j} on post ${i} by ${newUser.username}`,
+              created_at: new Date()
+            });
+          }
+        }
+      }
+    }
+  }
+  
 
 app.get("/", async (req, res) => {
     try {
