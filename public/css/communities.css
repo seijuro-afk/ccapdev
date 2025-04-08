@@ -42,7 +42,7 @@
 }
 
 .card-header h3 a {
-  color: #2563eb;
+  color: #00703C;
   text-decoration: none;
 }
 
@@ -129,7 +129,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #00703C;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -161,7 +161,7 @@
 }
 
 .btn-primary {
-  background: #2563eb;
+  background: #00703C;
   color: white;
 }
 
@@ -178,6 +178,22 @@
 .btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* Enhanced Join/Leave Button Styles */
+.btn.join-btn {
+  background: #4CAF50; /* Green for join */
+  color: white;
+}
+
+.btn.leave-btn {
+  background: #F44336; /* Red for leave */
+  color: white;
+}
+
+.btn.join-btn:hover,
+.btn.leave-btn:hover {
+  opacity: 0.8; /* Slightly transparent on hover */
 }
 
 /* Notification styles */
@@ -205,4 +221,3 @@
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
-
