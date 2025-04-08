@@ -92,7 +92,7 @@ const sampleUsers = [
     const communityRoutes = require("./routes/communityRoutes");
 
     // Register Routes
-    //app.use("/users", userRoutes); // Now all /users routes will work
+    app.use("/users", userRoutes); // Now all /users routes will work
     app.use("/posts", postRoutes);   // Handles all /posts routes
     app.use("/comments", commentRoutes); // Handles all /comments routes
     app.use("/communities", communityRoutes); // Handles all /communities routes
