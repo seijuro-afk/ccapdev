@@ -525,7 +525,7 @@ app.post("/signup", async (req, res) => {
             bio: bio || "",
             pfp_url: "/images/default-avatar.jpg"
         });
-
+        console.log(newUser);
         await newUser.save();
 
         // Redirect to login with success message
